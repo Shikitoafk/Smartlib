@@ -509,7 +509,7 @@
 
     <!-- Переключатель Ролей -->
     <div class="role-selector" id="role-selector">
-      <button class="btn-role active" id="role-lib" onclick="setRole('librarian')">👨‍🏫 Библиотека</button>
+      <button class="btn-role active" id="role-lib" onclick="tryEnterLibrarianRole()">👨‍🏫 Библиотека</button>
       <button class="btn-role" id="role-stud" onclick="setRole('student')">🎒 Ученик</button>
     </div>
   </div>
@@ -662,6 +662,10 @@
             <label class="form-label">ФИО Ученика</label>
             <input class="form-input" id="login-name-input" type="text" placeholder="Введите имя..." />
           </div>
+          <div class="form-group">
+            <label class="form-label">PIN-код доступа (4 цифры)</label>
+            <input class="form-input" id="login-pin-input" type="password" placeholder="Введите PIN..." maxlength="4" style="letter-spacing: 4px; text-align: center; font-weight:800;" />
+          </div>
           <button class="btn-submit" onclick="handleStudentLogin()">Войти в кабинет</button>
         </div>
 
@@ -685,6 +689,10 @@
           <div class="form-group">
             <label class="form-label">Полное ФИО</label>
             <input class="form-input" id="reg-name-input" type="text" placeholder="Иван Иванов" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Придумайте PIN-код (4 цифры)</label>
+            <input class="form-input" id="reg-pin-input" type="password" placeholder="Придумайте PIN..." maxlength="4" style="letter-spacing: 4px; text-align: center; font-weight:800;" />
           </div>
           <div class="form-group">
             <label class="form-label">Дизайн читательского билета</label>
@@ -787,6 +795,32 @@
   </div>
 
 </main>
+
+<!-- 🔑 МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ БИБЛИОТЕКАРЯ -->
+<div class="modal-pdf hidden" id="librarian-pin-modal" onclick="closeLibrarianPinModal()">
+  <div class="pdf-container" style="max-width: 420px; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-lg);" onclick="event.stopPropagation()">
+    <div class="pdf-header" style="background: linear-gradient(135deg, #1e2340 0%, #2a315c 100%); color: var(--white); padding: 18px 24px;">
+      <span class="pdf-title-text" style="font-size: 16px; font-weight: 800;">🔑 Доступ библиотекаря</span>
+      <button class="btn-close-pdf" onclick="closeLibrarianPinModal()">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-width="2.5" stroke-linecap="round" d="M18 6 6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div style="padding: 24px; text-align: center; background: var(--white);">
+      <p style="font-size: 13px; color: #64748b; margin-bottom: 20px; font-family: 'Nunito', sans-serif;">Для перехода в панель управления введите секретный PIN-код администратора (по умолчанию <b>7777</b>):</p>
+      
+      <div class="form-group" style="text-align: left;">
+        <input type="password" id="lib-pin-input" class="form-input" placeholder="Введите PIN..." maxlength="4" style="text-align: center; letter-spacing: 6px; font-size: 20px; font-weight: 800; border-radius: 12px;" onkeydown="if(event.key === 'Enter') checkLibrarianPin()" />
+      </div>
+      
+      <div style="display: flex; gap: 12px; margin-top: 24px;">
+        <button class="pdf-nav-btn" style="flex: 1; padding: 10px; border-radius: 10px; border: 1.5px solid #e2e8f0; font-weight: 800;" onclick="closeLibrarianPinModal()">Отмена</button>
+        <button class="btn-submit" style="flex: 1; margin-top: 0; padding: 10px; border-radius: 10px;" onclick="checkLibrarianPin()">Войти</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ════════════════════════
      ПРОДВИНУТЫЙ PDF-РИДЕР
@@ -1097,7 +1131,7 @@ async function loadAllData() {
     localReservations = [];
 
     dbRecords.forEach(r => {
-      if (r.student_class === 'CHAT_POST') return;
+      if (r.student_class === 'CHAT_POST' || r.student_class === 'STUDENT_ACCOUNT') return;
       const normClass = normalizeClassName(r.student_class);
       const record = { ...r, student_class: normClass };
       if (r.status === 'reserved') {
@@ -1165,6 +1199,27 @@ function setRole(role) {
   }
 }
 
+function tryEnterLibrarianRole() {
+  if (currentRole === 'librarian') return;
+  document.getElementById('librarian-pin-modal').classList.remove('hidden');
+  document.getElementById('lib-pin-input').value = '';
+  document.getElementById('lib-pin-input').focus();
+}
+
+function closeLibrarianPinModal() {
+  document.getElementById('librarian-pin-modal').classList.add('hidden');
+}
+
+function checkLibrarianPin() {
+  const pin = document.getElementById('lib-pin-input').value.trim();
+  if (pin === '7777' || pin === 'admin') {
+    closeLibrarianPinModal();
+    setRole('librarian');
+  } else {
+    alert("❌ Неверный PIN-код! Доступ запрещен.");
+  }
+}
+
 // ─── АВТОРИЗАЦИЯ И РЕГИСТРАЦИЯ УЧЕНИКА ───────────
 function setAuthTab(tab) {
   document.getElementById('tab-login').classList.toggle('active', tab === 'login');
@@ -1191,57 +1246,114 @@ function selectCardTheme(theme, element) {
   element.classList.add('active');
 }
 
-function handleStudentRegister() {
+async function handleStudentRegister() {
   const nameInput = document.getElementById('reg-name-input').value.trim();
   const classSelect = document.getElementById('reg-class-select').value;
+  const pinInput = document.getElementById('reg-pin-input').value.trim();
+
   if (!nameInput) {
     alert("Пожалуйста, введите ваше полное имя!");
     return;
   }
+  if (!pinInput || pinInput.length < 4) {
+    alert("Пожалуйста, создайте 4-значный PIN-код!");
+    return;
+  }
 
-  loggedInStudent = {
-    name: nameInput,
-    class: classSelect,
-    theme: regSelectedTheme,
-    id: 'LIB-' + Math.floor(1000 + Math.random()*9000)
-  };
+  try {
+    // 1. Проверяем, существует ли уже аккаунт этого ученика в Supabase
+    const { data: existing, error: fetchErr } = await db
+      .from('library_books')
+      .select('id')
+      .eq('student_class', 'STUDENT_ACCOUNT')
+      .eq('student_name', nameInput)
+      .eq('book_number', classSelect);
+      
+    if (fetchErr) throw fetchErr;
+    if (existing && existing.length > 0) {
+      alert("❌ Ученик с таким ФИО уже зарегистрирован! Пожалуйста, перейдите во вкладку 'Вход'.");
+      return;
+    }
 
-  localStorage.setItem('smartlib_student', JSON.stringify(loggedInStudent));
-  openStudentPortal();
+    // 2. Создаем аккаунт в Supabase
+    const { error: insErr } = await db.from('library_books').insert([
+      {
+        student_class: 'STUDENT_ACCOUNT',
+        student_name: nameInput,
+        book_title: pinInput, // Пароль хранится в book_title
+        book_number: classSelect, // Класс хранится в book_number
+        status: regSelectedTheme // Тема хранится в status
+      }
+    ]);
+
+    if (insErr) throw insErr;
+
+    loggedInStudent = {
+      name: nameInput,
+      class: classSelect,
+      theme: regSelectedTheme,
+      id: 'LIB-' + Math.floor(1000 + Math.random()*9000)
+    };
+
+    localStorage.setItem('smartlib_student', JSON.stringify(loggedInStudent));
+    openStudentPortal();
+    alert("🟢 Аккаунт успешно создан!");
+  } catch (err) {
+    alert("Ошибка регистрации в Supabase: " + err.message);
+  }
 }
 
-function handleStudentLogin() {
+async function handleStudentLogin() {
   const selectedClass = document.getElementById('login-class-select').value;
   const nameInput = document.getElementById('login-name-input').value.trim();
+  const pinInput = document.getElementById('login-pin-input').value.trim();
 
   if (!nameInput) {
     alert("Пожалуйста, введите имя!");
     return;
   }
-
-  // Находим точное имя из базы по fuzzy совпадению
-  const matchedRecord = allBooksData.find(r => 
-    r.student_class === selectedClass && 
-    checkStudentNameMatch(r.student_name, nameInput)
-  );
-
-  let finalName = nameInput;
-  if (matchedRecord) {
-    finalName = matchedRecord.student_name; // Используем точное имя из базы!
-  } else {
-    alert("Ученик с таким именем не найден в списках этого класса. Проверьте правильность написания или зарегистрируйтесь во вкладке 'Регистрация'!");
+  if (!pinInput) {
+    alert("Пожалуйста, введите PIN-код!");
     return;
   }
 
-  loggedInStudent = {
-    name: finalName,
-    class: selectedClass,
-    theme: 'space-blue',
-    id: 'LIB-' + Math.floor(1000 + Math.random()*9000)
-  };
+  try {
+    // 1. Ищем аккаунт в Supabase
+    const { data: accounts, error } = await db
+      .from('library_books')
+      .select('book_title, status')
+      .eq('student_class', 'STUDENT_ACCOUNT')
+      .eq('student_name', nameInput)
+      .eq('book_number', selectedClass);
 
-  localStorage.setItem('smartlib_student', JSON.stringify(loggedInStudent));
-  openStudentPortal();
+    if (error) throw error;
+
+    if (!accounts || accounts.length === 0) {
+      alert("❌ Аккаунт для этого ученика не найден! Пожалуйста, сначала зарегистрируйтесь во вкладке 'Регистрация'.");
+      return;
+    }
+
+    const storedPin = accounts[0].book_title;
+    const storedTheme = accounts[0].status;
+
+    if (pinInput !== storedPin) {
+      alert("❌ Неверный PIN-код! Попробуйте еще раз.");
+      return;
+    }
+
+    // Успешный вход
+    loggedInStudent = {
+      name: nameInput,
+      class: selectedClass,
+      theme: storedTheme || 'space-blue',
+      id: 'LIB-' + Math.floor(1000 + Math.random()*9000)
+    };
+
+    localStorage.setItem('smartlib_student', JSON.stringify(loggedInStudent));
+    openStudentPortal();
+  } catch (err) {
+    alert("Ошибка входа в Supabase: " + err.message);
+  }
 }
 
 function logoutStudent() {
