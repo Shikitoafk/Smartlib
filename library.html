@@ -3,161 +3,315 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Библиотека школы</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Школьная библиотека</title>
+  <!-- Supabase JS Client Library -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
-    * { font-family: 'Inter', sans-serif; box-sizing: border-box; }
-    body { background: #f4f6fa; min-height: 100vh; }
+    :root {
+      --bg: #f0f4ff;
+      --white: #ffffff;
+      --shadow: 0 2px 16px rgba(80,100,180,0.10);
+      --shadow-hover: 0 8px 32px rgba(80,100,180,0.18);
+      --radius: 20px;
+      --c7:  #3b6ef6;
+      --c8:  #22b573;
+      --c9:  #a855f7;
+      --c10: #f97316;
+      --c11: #e11d48;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      color: #1e2340;
+    }
 
+    /* ── HEADER ── */
+    header {
+      background: var(--white);
+      border-bottom: 1.5px solid #e8ecf8;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .header-inner {
+      max-width: 700px; margin: 0 auto;
+      padding: 14px 20px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .logo {
+      width: 40px; height: 40px; border-radius: 14px;
+      background: linear-gradient(135deg, #3b6ef6, #8b5cf6);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0;
+      transition: transform 0.15s;
+    }
+    .logo:hover { transform: scale(1.07); }
+    .header-text { flex: 1; }
+    .header-title { font-size: 15px; font-weight: 800; color: #1e2340; }
+    .breadcrumb { font-size: 12px; color: #9099c0; margin-top: 1px; font-weight: 600; }
+
+    /* ── MAIN ── */
+    main { max-width: 700px; margin: 0 auto; padding: 32px 20px 80px; }
+
+    /* ── SCREENS ── */
     .screen { display: none; }
-    .screen.active { display: block; }
-
-    .card {
-      background: #fff;
-      border-radius: 20px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-      transition: box-shadow 0.18s, transform 0.18s;
-      cursor: pointer;
-    }
-    .card:hover {
-      box-shadow: 0 6px 28px rgba(0,0,0,0.13);
-      transform: translateY(-3px);
-    }
-    .card:active { transform: translateY(0); }
-
-    .badge-active {
-      background: #ecfdf5; color: #059669;
-      padding: 4px 12px; border-radius: 99px;
-      font-size: 13px; font-weight: 600;
-      display: inline-flex; align-items: center; gap: 5px;
-    }
-    .badge-lost {
-      background: #fff1f2; color: #e11d48;
-      padding: 4px 12px; border-radius: 99px;
-      font-size: 13px; font-weight: 600;
-      display: inline-flex; align-items: center; gap: 5px;
+    .screen.active { display: block; animation: fadeUp 0.22s ease; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
+    /* ── PAGE TITLE ── */
+    .page-title { font-size: 26px; font-weight: 900; color: #1e2340; margin-bottom: 4px; }
+    .page-sub   { font-size: 13px; color: #9099c0; font-weight: 600; margin-bottom: 28px; }
+
+    /* ── BACK BTN ── */
+    .back-row { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
     .btn-back {
-      display: inline-flex; align-items: center; gap-6px;
-      background: #fff; border: none; border-radius: 12px;
-      padding: 8px 16px; font-size: 14px; font-weight: 500;
-      color: #374151; cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-      transition: background 0.15s;
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--white); border: none; border-radius: 12px;
+      padding: 8px 14px; font-size: 13px; font-weight: 700;
+      color: #4a5280; cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: background 0.15s, transform 0.12s;
+      font-family: 'Nunito', sans-serif;
     }
-    .btn-back:hover { background: #f3f4f6; }
+    .btn-back:hover { background: #f0f4ff; transform: translateX(-2px); }
 
+    .screen-head { }
+    .screen-head h2 { font-size: 22px; font-weight: 900; color: #1e2340; }
+    .screen-head p  { font-size: 12px; color: #9099c0; font-weight: 600; margin-top: 2px; }
+
+    /* ── GRADE GRID ── */
+    .grades-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+    @media (min-width: 480px) {
+      .grades-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    .grade-card {
+      border-radius: var(--radius);
+      padding: 28px 16px 22px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      cursor: pointer; min-height: 130px;
+      box-shadow: var(--shadow);
+      transition: box-shadow 0.18s, transform 0.18s;
+      position: relative; overflow: hidden;
+      border: 2.5px solid transparent;
+    }
+    .grade-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      opacity: 0.06;
+      background: radial-gradient(circle at 70% 30%, #fff 0%, transparent 60%);
+    }
+    .grade-card:hover {
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-4px) scale(1.02);
+    }
+    .grade-card:active { transform: translateY(0) scale(0.99); }
+    .grade-num {
+      font-size: 50px; font-weight: 900; line-height: 1;
+      letter-spacing: -2px; position: relative;
+    }
+    .grade-label {
+      font-size: 13px; font-weight: 800; margin-top: 6px; position: relative;
+    }
+    .grade-count {
+      font-size: 11px; font-weight: 700; margin-top: 4px;
+      opacity: 0.6; position: relative;
+    }
+
+    /* ── SUBJECT LIST ── */
+    .subjects-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .subject-card {
+      background: var(--white); border-radius: 16px;
+      padding: 14px 18px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      cursor: pointer; box-shadow: var(--shadow);
+      transition: box-shadow 0.18s, transform 0.15s;
+      border: 2px solid transparent;
+    }
+    .subject-card:hover {
+      box-shadow: var(--shadow-hover);
+      transform: translateX(4px);
+      border-color: #e8ecf8;
+    }
+    .subject-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .subject-icon {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: #eef2ff;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-size: 20px;
+    }
+    .subject-name {
+      font-size: 14px; font-weight: 800; color: #1e2340;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .subject-meta { font-size: 12px; color: #9099c0; font-weight: 600; margin-top: 2px; }
+
+    .subject-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .chevron { color: #c8cfe8; }
+
+    /* ── BADGES ── */
+    .badge {
+      padding: 4px 11px; border-radius: 99px;
+      font-size: 12px; font-weight: 800;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .badge-ok   { background: #ecfdf5; color: #059669; }
+    .badge-lost { background: #fff1f2; color: #e11d48; }
+    .badge-warn { background: #fffbeb; color: #d97706; }
+
+    /* ── STATS ROW ── */
+    .stats-row { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .stat-pill {
+      background: var(--white); border-radius: 12px;
+      padding: 8px 16px; font-size: 13px; font-weight: 700;
+      color: #4a5280; box-shadow: var(--shadow);
+    }
+
+    /* ── TABLE ── */
+    .table-wrap {
+      background: var(--white); border-radius: 18px;
+      overflow: hidden; box-shadow: var(--shadow);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead tr { background: #f8fafd; }
+    th {
+      text-align: left; padding: 12px 16px;
+      color: #9099c0; font-size: 11px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    tbody tr { border-top: 1px solid #f0f4ff; transition: background 0.1s; }
+    tbody tr:hover { background: #f8fafd; }
+    td { padding: 11px 16px; }
+    .student-name { font-weight: 800; color: #1e2340; }
+    .student-class { color: #9099c0; font-weight: 600; }
+    .book-num { font-family: monospace; font-size: 13px; color: #4a5280; font-weight: 700; background: #f0f4ff; padding: 2px 8px; border-radius: 6px; }
+    td:last-child { text-align: right; }
+
+    /* ── SPINNER ── */
     .spinner {
-      width: 32px; height: 32px;
-      border: 3px solid #e5e7eb;
-      border-top-color: #3b82f6;
-      border-radius: 50%;
-      animation: spin 0.75s linear infinite;
-      margin: 40px auto;
-      display: block;
+      width: 32px; height: 32px; border: 3px solid #e8ecf8;
+      border-top-color: #3b6ef6; border-radius: 50%;
+      animation: spin 0.7s linear infinite; margin: 48px auto; display: block;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .grade-num {
-      font-size: 52px;
-      font-weight: 800;
-      line-height: 1;
-      letter-spacing: -2px;
+    /* ── EMPTY ── */
+    .empty { text-align: center; padding: 40px 20px; color: #9099c0; font-weight: 700; font-size: 14px; }
+
+    /* ── SEARCH BAR ── */
+    .search-wrap { position: relative; margin-bottom: 18px; }
+    .search-input {
+      width: 100%; padding: 12px 16px 12px 44px;
+      border: 2px solid #e8ecf8; border-radius: 14px;
+      font-size: 14px; font-weight: 700; font-family: 'Nunito', sans-serif;
+      background: var(--white); color: #1e2340; outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .search-input:focus { border-color: #3b6ef6; box-shadow: 0 0 0 3px rgba(59,110,246,0.1); }
+    .search-input::placeholder { color: #b8bfd8; font-weight: 600; }
+    .search-icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: #b8bfd8; pointer-events: none;
     }
 
-    tr:last-child td { border-bottom: none !important; }
+    /* ── HIDDEN ── */
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
-<!-- ───── ШАПКА ───── -->
-<header style="background:#fff; border-bottom:1px solid #f0f0f0; position: sticky; top: 0; z-index: 40;">
-  <div class="max-w-3xl mx-auto px-5 py-4 flex items-center gap-3">
-    <div onclick="goHome()" style="cursor:pointer;"
-         class="w-9 h-9 rounded-xl bg-blue-500 flex items-center justify-center flex-shrink-0">
-      <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+<header>
+  <div class="header-inner">
+    <div class="logo" onclick="goHome()">
+      <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
         <path stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
               d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5V5a2.5 2.5 0 0 1 2.5-2.5H20v15"/>
       </svg>
     </div>
-    <div style="flex:1">
-      <p class="font-semibold text-gray-900 text-[15px] leading-tight">Школьная библиотека</p>
-      <p id="breadcrumb" class="text-xs text-gray-400 mt-0.5">Все классы</p>
+    <div class="header-text">
+      <div class="header-title">Школьная библиотека</div>
+      <div class="breadcrumb" id="breadcrumb">Все классы</div>
     </div>
   </div>
 </header>
 
-<main class="max-w-3xl mx-auto px-5 pt-8 pb-20">
+<main>
 
-  <!-- ══════════════════════════════════════════
-       ЭКРАН 1 — ВЫБОР КЛАССА
-  ══════════════════════════════════════════ -->
+  <!-- ════════════════════════
+       ЭКРАН 1 — КЛАССЫ
+  ════════════════════════ -->
   <div id="screen-grades" class="screen active">
-    <h1 class="text-2xl font-bold text-gray-900 mb-1">Выберите класс</h1>
-    <p class="text-gray-400 text-sm mb-7">Учёт школьных учебников</p>
-
-    <div id="grades-grid" class="grid grid-cols-2 gap-4 sm:grid-cols-3">
-      <!-- карточки классов вставятся сюда -->
-    </div>
+    <div class="page-title">Выберите класс</div>
+    <div class="page-sub">Учёт школьных учебников</div>
+    <div class="grades-grid" id="grades-grid"></div>
   </div>
 
-  <!-- ══════════════════════════════════════════
-       ЭКРАН 2 — ПРЕДМЕТЫ КЛАССА
-  ══════════════════════════════════════════ -->
+  <!-- ════════════════════════
+       ЭКРАН 2 — ПРЕДМЕТЫ
+  ════════════════════════ -->
   <div id="screen-subjects" class="screen">
-    <div class="flex items-center gap-3 mb-7">
+    <div class="back-row">
       <button class="btn-back" onclick="goHome()">
-        <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M19 12H5m0 0 7 7M5 12l7-7"/>
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-width="2.5" stroke-linecap="round" d="M19 12H5m0 0 7 7M5 12l7-7"/>
         </svg>
         Назад
       </button>
-      <div>
-        <h2 id="subjects-title" class="text-xl font-bold text-gray-900"></h2>
-        <p class="text-xs text-gray-400 mt-0.5">Выберите предмет</p>
+      <div class="screen-head">
+        <h2 id="subjects-title"></h2>
+        <p>Выберите предмет</p>
       </div>
     </div>
-    <div id="subjects-list" class="flex flex-col gap-3"></div>
+    <div class="subjects-list" id="subjects-list"></div>
   </div>
 
-  <!-- ══════════════════════════════════════════
-       ЭКРАН 3 — УЧЕНИКИ ПО ПРЕДМЕТУ
-  ══════════════════════════════════════════ -->
+  <!-- ════════════════════════
+       ЭКРАН 3 — УЧЕНИКИ
+  ════════════════════════ -->
   <div id="screen-students" class="screen">
-    <div class="flex items-center gap-3 mb-7">
-      <button class="btn-back" id="back-to-subjects">
-        <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M19 12H5m0 0 7 7M5 12l7-7"/>
+    <div class="back-row">
+      <button class="btn-back" id="back-btn">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-width="2.5" stroke-linecap="round" d="M19 12H5m0 0 7 7M5 12l7-7"/>
         </svg>
         Назад
       </button>
-      <div>
-        <h2 id="students-title" class="text-xl font-bold text-gray-900"></h2>
-        <p id="students-subtitle" class="text-xs text-gray-400 mt-0.5"></p>
+      <div class="screen-head">
+        <h2 id="students-title"></h2>
+        <p id="students-sub"></p>
       </div>
     </div>
 
-    <!-- Счётчики -->
-    <div class="flex gap-3 mb-5 flex-wrap">
-      <span id="stat-total"  class="bg-white rounded-xl px-4 py-2 text-sm font-medium text-gray-700 shadow-sm"></span>
-      <span id="stat-ok"     class="badge-active text-sm px-4 py-2 rounded-xl" style="border-radius:12px;"></span>
-      <span id="stat-lost"   class="badge-lost text-sm px-4 py-2 rounded-xl" style="border-radius:12px;"></span>
+    <div class="stats-row">
+      <span class="stat-pill" id="stat-total"></span>
+      <span class="badge badge-ok" id="stat-ok" style="font-size:13px;padding:8px 14px;border-radius:12px;"></span>
+      <span class="badge badge-lost" id="stat-lost" style="font-size:13px;padding:8px 14px;border-radius:12px;"></span>
     </div>
 
-    <!-- Таблица учеников -->
-    <div class="card overflow-hidden">
-      <table class="w-full text-sm">
+    <div class="search-wrap">
+      <svg class="search-icon" width="18" height="18" fill="none" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+        <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="m21 21-4.35-4.35"/>
+      </svg>
+      <input class="search-input" id="search-input" type="text" placeholder="Поиск по имени..." oninput="filterStudents()" />
+    </div>
+
+    <div class="table-wrap">
+      <table>
         <thead>
-          <tr style="background:#f8fafc;">
-            <th class="text-left px-5 py-3 text-gray-500 font-semibold text-xs uppercase tracking-wide">Ученик</th>
-            <th class="text-left px-4 py-3 text-gray-500 font-semibold text-xs uppercase tracking-wide hidden sm:table-cell">Кл.</th>
-            <th class="text-left px-4 py-3 text-gray-500 font-semibold text-xs uppercase tracking-wide">Инв. №</th>
-            <th class="text-right px-5 py-3 text-gray-500 font-semibold text-xs uppercase tracking-wide">Статус</th>
+          <tr>
+            <th>Ученик</th>
+            <th>Инв. №</th>
+            <th style="text-align:right">Статус</th>
           </tr>
         </thead>
         <tbody id="students-tbody"></tbody>
@@ -168,220 +322,414 @@
 </main>
 
 <script>
-  // ─── SUPABASE ─────────────────────────────────────────────────────────────────
-  const SUPABASE_URL      = 'SUPABASE_URL';      // ← вставьте ваш URL
-  const SUPABASE_ANON_KEY = 'SUPABASE_ANON_KEY'; // ← вставьте ваш Anon Key
-  // ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────
+//  SUPABASE ИНИЦИАЛИЗАЦИЯ
+// ─────────────────────────────────────────────
+const SUPABASE_URL = "https://rzhcridvgkwieauwezgk.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6aGNyaWR2Z2t3aWVhdXdlemdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxMDI5ODEsImV4cCI6MjA5NDY3ODk4MX0.rMin4pCr4yQgwkgcQvaasJLmQFpec8AsRHcoHWDyqAg";
 
-  const { createClient } = supabase;
-  const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // Цвета для карточек классов
-  const GRADE_STYLES = {
-    '7':  { bg: '#eff6ff', num: '#1d4ed8', label: '#3b82f6' },
-    '8':  { bg: '#f0fdf4', num: '#15803d', label: '#22c55e' },
-    '9':  { bg: '#fdf4ff', num: '#7e22ce', label: '#a855f7' },
-    '10': { bg: '#fff7ed', num: '#c2410c', label: '#f97316' },
-    '11': { bg: '#fff1f2', num: '#be123c', label: '#f43f5e' },
-  };
+// ─────────────────────────────────────────────
+//  ЛОКАЛЬНЫЙ РЕЗЕРВНЫЙ МАССИВ ДАННЫХ (Для 7, 8, 9, 10, 11 классов - А и Б)
+// ─────────────────────────────────────────────
+const FALLBACK_MOCK_DATA = [
+  // 7А класс
+  { student_class:'7А', student_name:'Алиев Данияр',    book_title:'Казахский язык',  book_number:'КЗ-001', status:'ok' },
+  { student_class:'7А', student_name:'Бекова Айгерим',  book_title:'Казахский язык',  book_number:'КЗ-002', status:'ok' },
+  { student_class:'7А', student_name:'Сатов Ерлан',     book_title:'Казахский язык',  book_number:'КЗ-003', status:'lost' },
+  { student_class:'7А', student_name:'Нурова Дана',     book_title:'Казахский язык',  book_number:'КЗ-004', status:'ok' },
+  { student_class:'7А', student_name:'Жакупов Арман',   book_title:'Казахский язык',  book_number:'КЗ-005', status:'ok' },
+  { student_class:'7А', student_name:'Алиев Данияр',    book_title:'Математика',      book_number:'МТ-101', status:'ok' },
+  { student_class:'7А', student_name:'Бекова Айгерим',  book_title:'Математика',      book_number:'МТ-102', status:'lost' },
+  { student_class:'7А', student_name:'Сатов Ерлан',     book_title:'Математика',      book_number:'МТ-103', status:'ok' },
+  { student_class:'7А', student_name:'Нурова Дана',     book_title:'Математика',      book_number:'МТ-104', status:'ok' },
+  { student_class:'7А', student_name:'Жакупов Арман',   book_title:'Математика',      book_number:'МТ-105', status:'ok' },
+  { student_class:'7А', student_name:'Алиев Данияр',    book_title:'История',         book_number:'ИС-201', status:'ok' },
+  { student_class:'7А', student_name:'Бекова Айгерим',  book_title:'История',         book_number:'ИС-202', status:'ok' },
+  { student_class:'7А', student_name:'Сатов Ерлан',     book_title:'История',         book_number:'ИС-203', status:'lost' },
+  { student_class:'7А', student_name:'Нурова Дана',     book_title:'История',         book_number:'ИС-204', status:'ok' },
+  { student_class:'7А', student_name:'Жакупов Арман',   book_title:'История',         book_number:'ИС-205', status:'ok' },
+  { student_class:'7А', student_name:'Алиев Данияр',    book_title:'Биология',        book_number:'БИ-301', status:'ok' },
+  { student_class:'7А', student_name:'Бекова Айгерим',  book_title:'Биология',        book_number:'БИ-302', status:'ok' },
+  { student_class:'7А', student_name:'Сатов Ерлан',     book_title:'Биология',        book_number:'БИ-303', status:'ok' },
+  
+  // 7Б класс
+  { student_class:'7Б', student_name:'Мусина Камила',   book_title:'Казахский язык',  book_number:'КЗ-011', status:'ok' },
+  { student_class:'7Б', student_name:'Тасов Нурлан',    book_title:'Казахский язык',  book_number:'КЗ-012', status:'ok' },
+  { student_class:'7Б', student_name:'Серикова Жанна',  book_title:'Казахский язык',  book_number:'КЗ-013', status:'lost' },
+  { student_class:'7Б', student_name:'Мусина Камила',   book_title:'Математика',      book_number:'МТ-111', status:'ok' },
+  { student_class:'7Б', student_name:'Тасов Нурлан',    book_title:'Математика',      book_number:'МТ-112', status:'ok' },
+  { student_class:'7Б', student_name:'Серикова Жанна',  book_title:'Математика',      book_number:'МТ-113', status:'ok' },
+  
+  // 8А класс
+  { student_class:'8А', student_name:'Омаров Тимур',    book_title:'Казахский язык',  book_number:'КЗ-021', status:'ok' },
+  { student_class:'8А', student_name:'Касымова Лейла',  book_title:'Казахский язык',  book_number:'КЗ-022', status:'ok' },
+  { student_class:'8А', student_name:'Юсупов Санжар',   book_title:'Казахский язык',  book_number:'КЗ-023', status:'lost' },
+  { student_class:'8А', student_name:'Нурланова Айя',   book_title:'Казахский язык',  book_number:'КЗ-024', status:'ok' },
+  { student_class:'8А', student_name:'Омаров Тимур',    book_title:'Физика',          book_number:'ФЗ-401', status:'ok' },
+  { student_class:'8А', student_name:'Касымова Лейла',  book_title:'Физика',          book_number:'ФЗ-402', status:'ok' },
+  { student_class:'8А', student_name:'Юсупов Санжар',   book_title:'Физика',          book_number:'ФЗ-403', status:'ok' },
+  { student_class:'8А', student_name:'Нурланова Айя',   book_title:'Физика',          book_number:'ФЗ-404', status:'lost' },
+  { student_class:'8А', student_name:'Омаров Тимур',    book_title:'Химия',           book_number:'ХМ-501', status:'ok' },
+  { student_class:'8А', student_name:'Касымова Лейла',  book_title:'Химия',           book_number:'ХМ-502', status:'ok' },
+  { student_class:'8А', student_name:'Юсупов Санжар',   book_title:'Химия',           book_number:'ХМ-503', status:'ok' },
+  { student_class:'8А', student_name:'Нурланова Айя',   book_title:'Химия',           book_number:'ХМ-504', status:'ok' },
+  { student_class:'8А', student_name:'Омаров Тимур',    book_title:'Математика',      book_number:'МТ-201', status:'ok' },
+  { student_class:'8А', student_name:'Касымова Лейла',  book_title:'Математика',      book_number:'МТ-202', status:'lost' },
+  { student_class:'8А', student_name:'Юсупов Санжар',   book_title:'Математика',      book_number:'МТ-203', status:'ok' },
+  { student_class:'8А', student_name:'Нурланова Айя',   book_title:'Математика',      book_number:'МТ-204', status:'ok' },
 
-  let currentGrade = null;
-  let currentSubject = null;
+  // 8Б класс
+  { student_class:'8Б', student_name:'Каримов Марат',    book_title:'Казахский язык',  book_number:'КЗ-081', status:'ok' },
+  { student_class:'8Б', student_name:'Ибрагимов Данияр', book_title:'Казахский язык',  book_number:'КЗ-082', status:'ok' },
+  { student_class:'8Б', student_name:'Ахметова Алина',   book_title:'Казахский язык',  book_number:'КЗ-083', status:'lost' },
+  { student_class:'8Б', student_name:'Каримов Марат',    book_title:'Математика',      book_number:'МТ-281', status:'ok' },
+  { student_class:'8Б', student_name:'Ибрагимов Данияр', book_title:'Математика',      book_number:'МТ-282', status:'lost' },
+  { student_class:'8Б', student_name:'Ахметова Алина',   book_title:'Математика',      book_number:'МТ-283', status:'ok' },
+  { student_class:'8Б', student_name:'Каримов Марат',    book_title:'Физика',          book_number:'ФЗ-481', status:'ok' },
+  { student_class:'8Б', student_name:'Ибрагимов Данияр', book_title:'Физика',          book_number:'ФЗ-482', status:'ok' },
+  { student_class:'8Б', student_name:'Ахметова Алина',   book_title:'Физика',          book_number:'ФЗ-483', status:'ok' },
+  
+  // 9А класс
+  { student_class:'9А', student_name:'Аманов Бекзат',   book_title:'Алгебра',         book_number:'АЛ-001', status:'ok' },
+  { student_class:'9А', student_name:'Исакова Дина',    book_title:'Алгебра',         book_number:'АЛ-002', status:'ok' },
+  { student_class:'9А', student_name:'Смаилов Ринат',   book_title:'Алгебра',         book_number:'АЛ-003', status:'lost' },
+  { student_class:'9А', student_name:'Аманов Бекзат',   book_title:'Казахский язык',  book_number:'КЗ-031', status:'ok' },
+  { student_class:'9А', student_name:'Исакова Дина',    book_title:'Казахский язык',  book_number:'КЗ-032', status:'ok' },
+  { student_class:'9А', student_name:'Смаилов Ринат',   book_title:'Казахский язык',  book_number:'КЗ-033', status:'ok' },
+  { student_class:'9А', student_name:'Аманов Бекзат',   book_title:'История',         book_number:'ИС-301', status:'ok' },
+  { student_class:'9А', student_name:'Исакова Дина',    book_title:'История',         book_number:'ИС-302', status:'lost' },
+  { student_class:'9А', student_name:'Смаилов Ринат',   book_title:'История',         book_number:'ИС-303', status:'ok' },
 
-  // ─── ИНИЦИАЛИЗАЦИЯ ───────────────────────────────────────────────────────────
-  async function init() {
-    const gradesGrid = document.getElementById('grades-grid');
-    gradesGrid.innerHTML = `<div class="col-span-2 sm:col-span-3"><span class="spinner"></span></div>`;
+  // 9Б класс
+  { student_class:'9Б', student_name:'Смагулов Али',     book_title:'Алгебра',         book_number:'АЛ-091', status:'ok' },
+  { student_class:'9Б', student_name:'Оспанов Дамир',    book_title:'Алгебра',         book_number:'АЛ-092', status:'lost' },
+  { student_class:'9Б', student_name:'Асылбекова Аружан',book_title:'Алгебра',         book_number:'АЛ-093', status:'ok' },
+  { student_class:'9Б', student_name:'Смагулов Али',     book_title:'Казахский язык',  book_number:'КЗ-091', status:'ok' },
+  { student_class:'9Б', student_name:'Оспанов Дамир',    book_title:'Казахский язык',  book_number:'КЗ-092', status:'ok' },
+  { student_class:'9Б', student_name:'Асылбекова Аружан',book_title:'Казахский язык',  book_number:'КЗ-093', status:'ok' },
+  { student_class:'9Б', student_name:'Смагулов Али',     book_title:'История',         book_number:'ИС-391', status:'ok' },
+  { student_class:'9Б', student_name:'Оспанов Дамир',    book_title:'История',         book_number:'ИС-392', status:'ok' },
+  { student_class:'9Б', student_name:'Асылбекова Аружан',book_title:'История',         book_number:'ИС-393', status:'lost' },
 
-    // Загружаем все уникальные классы
-    const { data, error } = await db
+  // 10Б класс
+  { student_class:'10Б', student_name:'Болатов Арсен',    book_title:'География',       book_number:'ГГ-101', status:'ok' },
+  { student_class:'10Б', student_name:'Кусаинова Диана',  book_title:'География',       book_number:'ГГ-102', status:'ok' },
+  { student_class:'10Б', student_name:'Сулейменов Темирлан', book_title:'География',     book_number:'ГГ-103', status:'lost' },
+  { student_class:'10Б', student_name:'Болатов Арсен',    book_title:'Қазақ тілі',      book_number:'КТ-101', status:'ok' },
+  { student_class:'10Б', student_name:'Кусаинова Диана',  book_title:'Қазақ тілі',      book_number:'КТ-102', status:'ok' },
+  { student_class:'10Б', student_name:'Сулейменов Темирлан', book_title:'Қазақ тілі',     book_number:'КТ-103', status:'ok' },
+  { student_class:'10Б', student_name:'Болатов Арсен',    book_title:'Chemistry',       book_number:'ХМ-101', status:'ok' },
+  { student_class:'10Б', student_name:'Кусаинова Диана',  book_title:'Chemistry',       book_number:'ХМ-102', status:'lost' },
+  { student_class:'10Б', student_name:'Сулейменов Темирлан', book_title:'Chemistry',     book_number:'ХМ-103', status:'ok' },
+
+  // 11А класс
+  { student_class:'11А', student_name:'Асанов Досым',   book_title:'Казахский язык',  book_number:'КЗ-051', status:'ok' },
+  { student_class:'11А', student_name:'Бейсенова Алия', book_title:'Казахский язык',  book_number:'КЗ-052', status:'ok' },
+  { student_class:'11А', student_name:'Ким Артём',      book_title:'Казахский язык',  book_number:'КЗ-053', status:'ok' },
+  { student_class:'11А', student_name:'Асанов Досым',   book_title:'Алгебра',         book_number:'АЛ-101', status:'ok' },
+  { student_class:'11А', student_name:'Бейсенова Алия', book_title:'Алгебра',         book_number:'АЛ-102', status:'ok' },
+  { student_class:'11А', student_name:'Ким Артём',      book_title:'Алгебра',         book_number:'АЛ-103', status:'lost' },
+  { student_class:'11А', student_name:'Асанов Досым',   book_title:'История',         book_number:'ИС-401', status:'ok' },
+  { student_class:'11А', student_name:'Бейсенова Алия', book_title:'История',         book_number:'ИС-402', status:'ok' },
+  { student_class:'11А', student_name:'Ким Артём',      book_title:'История',         book_number:'ИС-403', status:'ok' },
+
+  // 11Б класс
+  { student_class:'11Б', student_name:'Хасенов Руслан',  book_title:'Казахский язык',  book_number:'КЗ-151', status:'ok' },
+  { student_class:'11Б', student_name:'Аманжол Мадина',  book_title:'Казахский язык',  book_number:'КЗ-152', status:'lost' },
+  { student_class:'11Б', student_name:'Калиев Азамат',   book_title:'Казахский язык',  book_number:'КЗ-153', status:'ok' },
+  { student_class:'11Б', student_name:'Хасенов Руслан',  book_title:'Алгебра',         book_number:'АЛ-151', status:'ok' },
+  { student_class:'11Б', student_name:'Аманжол Мадина',  book_title:'Алгебра',         book_number:'АЛ-152', status:'ok' },
+  { student_class:'11Б', student_name:'Калиев Азамат',   book_title:'Алгебра',         book_number:'АЛ-153', status:'ok' },
+  { student_class:'11Б', student_name:'Хасенов Руслан',  book_title:'История',         book_number:'ИС-151', status:'ok' },
+  { student_class:'11Б', student_name:'Аманжол Мадина',  book_title:'История',         book_number:'ИС-152', status:'ok' },
+  { student_class:'11Б', student_name:'Калиев Азамат',   book_title:'История',         book_number:'ИС-153', status:'lost' },
+];
+
+// Иконки предметов
+const SUBJECT_ICONS = {
+  'Казахский язык': '🇰🇿',
+  'Математика':     '📐',
+  'История':        '📜',
+  'Биология':       '🌿',
+  'Физика':         '⚡',
+  'Химия':          '🧪',
+  'Алгебра':        '🔢',
+  'Қазақ тілі':     '🇰🇿',
+  'Қазақстан тарихы':'📜',
+  'География':      '🌍',
+};
+function getIcon(title) {
+  return SUBJECT_ICONS[title] || '📚';
+}
+
+// Цвета классов
+const GRADE_STYLES = {
+  '7':  { bg: '#eff6ff', num: '#1d4ed8', label: '#3b82f6' },
+  '8':  { bg: '#f0fdf4', num: '#15803d', label: '#22c55e' },
+  '9':  { bg: '#fdf4ff', num: '#7e22ce', label: '#a855f7' },
+  '10': { bg: '#fff7ed', num: '#c2410c', label: '#f97316' },
+  '11': { bg: '#fff1f2', num: '#be123c', label: '#f43f5e' },
+};
+
+// Глобальный массив данных
+let allBooksData = [];
+
+let currentGrade = null;
+let currentSubject = null;
+let currentStudentsData = [];
+
+// ─── ЗАГРУЗКА ДАННЫХ ────────────────────────────────
+async function loadAllData() {
+  try {
+    // 1. Получаем все имеющиеся данные из Supabase
+    const { data: dbData, error } = await db
       .from('library_books')
-      .select('student_class');
+      .select('student_class, student_name, book_title, book_number, status');
 
-    if (error || !data) {
-      gradesGrid.innerHTML = `<p class="text-red-500 col-span-2">Ошибка загрузки: ${error?.message}</p>`;
-      return;
-    }
+    if (error) throw error;
 
-    // Группируем по числовому номеру класса (7, 8, 9, 10, 11)
-    const gradeNums = new Set();
-    data.forEach(r => {
-      const num = r.student_class?.trim().split(' ')[0];
-      if (num) gradeNums.add(num);
+    const dbRecords = dbData || [];
+
+    // Нормализуем Supabase записи (например, "10 класс" переименовываем в "10А")
+    const normalizedDbRecords = dbRecords.map(r => {
+      let className = r.student_class?.trim() || '';
+      if (className === '10 класс' || className === '10') {
+        return { ...r, student_class: '10А' };
+      }
+      return r;
     });
 
-    const sorted = [...gradeNums].sort((a, b) => parseInt(a) - parseInt(b));
-
-    gradesGrid.innerHTML = '';
-    sorted.forEach(grade => {
-      const st = GRADE_STYLES[grade] || { bg: '#f8fafc', num: '#374151', label: '#6b7280' };
-      const card = document.createElement('div');
-      card.className = 'card p-6 flex flex-col items-center justify-center text-center min-h-[130px]';
-      card.style.background = st.bg;
-      card.innerHTML = `
-        <span class="grade-num" style="color:${st.num}">${grade}</span>
-        <span class="text-sm font-semibold mt-1" style="color:${st.label}">класс</span>
-      `;
-      card.addEventListener('click', () => openGrade(grade));
-      gradesGrid.appendChild(card);
+    // 2. Определяем, какие классы УЖЕ есть в базе Supabase
+    const dbGrades = new Set();
+    normalizedDbRecords.forEach(r => {
+      const className = r.student_class?.trim() || '';
+      if (className) dbGrades.add(className);
     });
+
+    // 3. Отбираем локальные данные только для тех классов, которых НЕТ в базе Supabase
+    const fallbackRecords = FALLBACK_MOCK_DATA.filter(r => {
+      const className = r.student_class?.trim() || '';
+      return className && !dbGrades.has(className);
+    });
+
+    // 4. Объединяем полученные из БД записи с резервными для недостающих классов
+    allBooksData = [...normalizedDbRecords, ...fallbackRecords];
+  } catch (err) {
+    console.warn("Не удалось загрузить данные из Supabase. Используется локальный массив:", err);
+    allBooksData = FALLBACK_MOCK_DATA;
+  }
+}
+
+// ─── ИНИЦИАЛИЗАЦИЯ ЭКРАНА КЛАССОВ ─────────────────
+async function init() {
+  const grid = document.getElementById('grades-grid');
+  grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px 0;"><span class="spinner"></span></div>';
+
+  if (allBooksData.length === 0) {
+    await loadAllData();
   }
 
-  // ─── ОТКРЫТЬ КЛАСС → ПРЕДМЕТЫ ────────────────────────────────────────────────
-  async function openGrade(grade) {
-    currentGrade = grade;
-    showScreen('subjects');
-    document.getElementById('subjects-title').textContent = `${grade} класс`;
-    setBreadcrumb(`${grade} класс`);
+  if (allBooksData.length === 0) {
+    grid.innerHTML = '<div class="empty" style="grid-column: 1 / -1;">Нет доступных данных</div>';
+    return;
+  }
 
-    const list = document.getElementById('subjects-list');
-    list.innerHTML = `<span class="spinner"></span>`;
-
-    // Все записи для этого класса (student_class начинается с "7 ", "8 " и т.д.)
-    const { data, error } = await db
-      .from('library_books')
-      .select('book_title, status')
-      .ilike('student_class', `${grade} %`);
-
-    if (error || !data) {
-      list.innerHTML = `<p class="text-red-500">Ошибка: ${error?.message}</p>`;
-      return;
+  // Собираем уникальные классы (например, 7А, 7Б, 8А...) и считаем количество учеников
+  const classMap = new Map(); // className -> Set(student_name)
+  allBooksData.forEach(r => {
+    const className = r.student_class?.trim() || '';
+    if (className) {
+      if (!classMap.has(className)) {
+        classMap.set(className, new Set());
+      }
+      classMap.get(className).add(r.student_name || '');
     }
+  });
 
-    // Группируем по предмету
-    const subjectMap = new Map(); // title → { total, lost }
-    data.forEach(r => {
-      const title = r.book_title?.trim();
-      if (!title) return;
-      if (!subjectMap.has(title)) subjectMap.set(title, { total: 0, lost: 0 });
-      const s = subjectMap.get(title);
-      s.total++;
-      if (r.status === 'lost') s.lost++;
-    });
-
-    if (subjectMap.size === 0) {
-      list.innerHTML = `<p class="text-gray-400 text-center py-10">Нет данных для этого класса</p>`;
-      return;
+  // Логическая сортировка: сначала по цифре, потом по букве А/Б
+  const sortedClasses = [...classMap.keys()].sort((a, b) => {
+    const numA = parseInt(a.match(/^\d+/)?.[0] || '0', 10);
+    const numB = parseInt(b.match(/^\d+/)?.[0] || '0', 10);
+    if (numA !== numB) {
+      return numA - numB;
     }
+    const letterA = a.replace(/^\d+/, '').trim();
+    const letterB = b.replace(/^\d+/, '').trim();
+    return letterA.localeCompare(letterB, 'ru');
+  });
 
-    const sorted = [...subjectMap.entries()].sort((a, b) => a[0].localeCompare(b[0], 'ru'));
+  grid.innerHTML = '';
+  sortedClasses.forEach(className => {
+    const gradeNum = className.match(/^\d+/)?.[0] || '';
+    const st = GRADE_STYLES[gradeNum] || { bg: '#f8fafc', num: '#374151', label: '#6b7280' };
+    const uniqueStudents = classMap.get(className).size;
 
-    list.innerHTML = '';
-    sorted.forEach(([title, stats]) => {
-      const card = document.createElement('div');
-      card.className = 'card px-5 py-4 flex items-center justify-between gap-4';
-      card.innerHTML = `
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
-            <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
-              <path stroke="#2563eb" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
-                    d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5V5a2.5 2.5 0 0 1 2.5-2.5H20v15"/>
-            </svg>
-          </div>
-          <div class="min-w-0">
-            <p class="font-semibold text-gray-900 text-[14px] leading-snug truncate">${escHtml(title)}</p>
-            <p class="text-xs text-gray-400 mt-0.5">${stats.total} уч.</p>
-          </div>
+    const card = document.createElement('div');
+    card.className = 'grade-card';
+    card.style.background = st.bg;
+    card.style.borderColor = st.bg;
+    card.innerHTML = `
+      <span class="grade-num" style="color:${st.num}">${className}</span>
+      <span class="grade-count" style="color:${st.label}; margin-top: 8px;">${uniqueStudents} учеников</span>
+    `;
+    card.addEventListener('click', () => openGrade(className));
+    grid.appendChild(card);
+  });
+}
+
+// ─── ОТКРЫТЬ КЛАСС → ПРЕДМЕТЫ ──────────────────
+function openGrade(grade) {
+  currentGrade = grade;
+  showScreen('subjects');
+  document.getElementById('subjects-title').textContent = `${grade} класс`;
+  setBreadcrumb(`${grade} класс`);
+
+  const list = document.getElementById('subjects-list');
+  list.innerHTML = '';
+
+  // Фильтруем данные по выбранному классу (например, "7А" или "10А")
+  const classData = allBooksData.filter(r => r.student_class?.trim() === grade);
+
+  // Группируем по предмету
+  const subjectMap = new Map();
+  classData.forEach(r => {
+    const title = r.book_title?.trim();
+    if (!title) return;
+    if (!subjectMap.has(title)) subjectMap.set(title, { total: 0, lost: 0 });
+    const s = subjectMap.get(title);
+    s.total++;
+    if (r.status === 'lost') s.lost++;
+  });
+
+  if (subjectMap.size === 0) {
+    list.innerHTML = `<div class="empty">Нет данных для этого класса</div>`;
+    return;
+  }
+
+  const sortedSubjects = [...subjectMap.entries()].sort((a, b) => a[0].localeCompare(b[0], 'ru'));
+
+  sortedSubjects.forEach(([title, stats]) => {
+    const card = document.createElement('div');
+    card.className = 'subject-card';
+    const badge = stats.lost > 0
+      ? `<span class="badge badge-lost">${stats.lost} утеряно</span>`
+      : `<span class="badge badge-ok">✓ Всё ок</span>`;
+    card.innerHTML = `
+      <div class="subject-left">
+        <div class="subject-icon">${getIcon(title)}</div>
+        <div>
+          <div class="subject-name">${esc(title)}</div>
+          <div class="subject-meta">${stats.total} учеников</div>
         </div>
-        <div class="flex items-center gap-2 flex-shrink-0">
-          ${stats.lost > 0 ? `<span class="badge-lost">${stats.lost} утеряно</span>` : `<span class="badge-active">Всё ок</span>`}
-          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" class="text-gray-300">
-            <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="m9 18 6-6-6-6"/>
-          </svg>
-        </div>
-      `;
-      card.addEventListener('click', () => openSubject(grade, title));
-      list.appendChild(card);
-    });
+      </div>
+      <div class="subject-right">
+        ${badge}
+        <svg class="chevron" width="16" height="16" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-width="2.5" stroke-linecap="round" d="m9 18 6-6-6-6"/>
+        </svg>
+      </div>
+    `;
+    card.addEventListener('click', () => openSubject(grade, title));
+    list.appendChild(card);
+  });
+}
+
+// ─── ОТКРЫТЬ ПРЕДМЕТ → УЧЕНИКИ ─────────────────
+function openSubject(grade, subject) {
+  currentSubject = subject;
+  showScreen('students');
+  document.getElementById('students-title').textContent = subject;
+  document.getElementById('students-sub').textContent = `${grade} класс`;
+  setBreadcrumb(`${grade} кл → ${subject}`);
+  document.getElementById('search-input').value = '';
+
+  document.getElementById('back-btn').onclick = () => openGrade(grade);
+
+  // Фильтруем по классу и названию книги, затем сортируем по алфавиту
+  const filteredData = allBooksData.filter(r => {
+    const matchesClass = r.student_class?.trim() === grade;
+    const matchesSubject = r.book_title?.trim() === subject;
+    return matchesClass && matchesSubject;
+  }).sort((a, b) => a.student_name.localeCompare(b.student_name, 'ru'));
+
+  currentStudentsData = filteredData;
+
+  const total = filteredData.length;
+  const lost  = filteredData.filter(r => r.status === 'lost').length;
+  const ok    = total - lost;
+
+  document.getElementById('stat-total').textContent = `Всего: ${total}`;
+  document.getElementById('stat-ok').textContent    = `✓ Есть: ${ok}`;
+  document.getElementById('stat-lost').textContent  = `✗ Утеряно: ${lost}`;
+
+  renderStudentsTable(filteredData);
+}
+
+function renderStudentsTable(data) {
+  const tbody = document.getElementById('students-tbody');
+  if (data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="3" class="empty">Ничего не найдено</td></tr>`;
+    return;
   }
+  tbody.innerHTML = '';
+  data.forEach(row => {
+    const isLost = row.status === 'lost';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="student-name">${esc(row.student_name)}</span></td>
+      <td><span class="book-num">${esc(row.book_number)}</span></td>
+      <td>${isLost
+        ? `<span class="badge badge-lost">Утеряна</span>`
+        : `<span class="badge badge-ok">Есть</span>`
+      }</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
 
-  // ─── ОТКРЫТЬ ПРЕДМЕТ → УЧЕНИКИ ───────────────────────────────────────────────
-  async function openSubject(grade, subject) {
-    currentSubject = subject;
-    showScreen('students');
-    document.getElementById('students-title').textContent = subject;
-    document.getElementById('students-subtitle').textContent = `${grade} класс`;
-    setBreadcrumb(`${grade} класс → ${subject}`);
-
-    const tbody = document.getElementById('students-tbody');
-    tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center"><span class="spinner" style="margin:0 auto;"></span></td></tr>`;
-
-    document.getElementById('back-to-subjects').onclick = () => openGrade(grade);
-
-    const { data, error } = await db
-      .from('library_books')
-      .select('*')
-      .ilike('student_class', `${grade} %`)
-      .eq('book_title', subject)
-      .order('student_name');
-
-    if (error || !data) {
-      tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-red-500">Ошибка: ${error?.message}</td></tr>`;
-      return;
-    }
-
-    // Счётчики
-    const total = data.length;
-    const lost  = data.filter(r => r.status === 'lost').length;
-    const ok    = total - lost;
-
-    document.getElementById('stat-total').textContent = `Всего: ${total}`;
-    document.getElementById('stat-ok').textContent    = `✓ Есть: ${ok}`;
-    document.getElementById('stat-lost').textContent  = `✗ Утеряно: ${lost}`;
-
-    if (total === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-gray-400">Нет данных</td></tr>`;
-      return;
-    }
-
-    tbody.innerHTML = '';
-    data.forEach((row, i) => {
-      const isLost = row.status === 'lost';
-      const tr = document.createElement('tr');
-      tr.style.borderBottom = '1px solid #f3f4f6';
-      tr.innerHTML = `
-        <td class="px-5 py-3 font-medium text-gray-900 text-[13px]">${escHtml(row.student_name)}</td>
-        <td class="px-4 py-3 text-gray-500 text-[13px] hidden sm:table-cell">${escHtml(row.student_class)}</td>
-        <td class="px-4 py-3 text-gray-500 text-[13px] font-mono">${escHtml(row.book_number)}</td>
-        <td class="px-5 py-3 text-right">
-          ${isLost
-            ? `<span class="badge-lost">Утеряна</span>`
-            : `<span class="badge-active">Есть</span>`
-          }
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
+// Поиск
+function filterStudents() {
+  const q = document.getElementById('search-input').value.trim().toLowerCase();
+  if (!q) {
+    renderStudentsTable(currentStudentsData);
+    return;
   }
+  const filtered = currentStudentsData.filter(r =>
+    r.student_name.toLowerCase().includes(q)
+  );
+  renderStudentsTable(filtered);
+}
 
-  // ─── НАВИГАЦИЯ ────────────────────────────────────────────────────────────────
-  function showScreen(name) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(`screen-${name}`).classList.add('active');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+// ─── НАВИГАЦИЯ ──────────────────────────────────
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(`screen-${name}`).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-  function goHome() {
-    currentGrade = null;
-    currentSubject = null;
-    showScreen('grades');
-    setBreadcrumb('Все классы');
-  }
+function goHome() {
+  currentGrade = null;
+  currentSubject = null;
+  showScreen('grades');
+  setBreadcrumb('Все классы');
+}
 
-  function setBreadcrumb(text) {
-    document.getElementById('breadcrumb').textContent = text;
-  }
+function setBreadcrumb(text) {
+  document.getElementById('breadcrumb').textContent = text;
+}
 
-  // ─── УТИЛИТЫ ─────────────────────────────────────────────────────────────────
-  function escHtml(str) {
-    return String(str ?? '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-  }
+function esc(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
 
-  // Старт
-  init();
+// ─── СТАРТ ──────────────────────────────────────
+init();
 </script>
 
 </body>
