@@ -1024,29 +1024,33 @@ function normalizeClassName(name) {
   return str;
 }
 
-function normalizeKazakhLetters(str) {
-  if (!str) return '';
-  return str.toLowerCase()
-    .replace(/қ/g, 'к')
-    .replace(/ң/g, 'н')
-    .replace(/ғ/g, 'г')
-    .replace(/ә/g, 'а')
-    .replace(/ө/g, 'о')
-    .replace(/ү/g, 'у')
-    .replace(/ұ/g, 'у')
-    .replace(/і/g, 'и')
-    .replace(/h/g, 'х');
+// Функция очистки имени для нечувствительного к регистру, порядку слов и казахским символам сравнения
+function cleanNameForMatching(name) {
+  if (!name) return '';
+  return name.toLowerCase()
+    .trim()
+    .replace(/[^а-яёa-z0-9\s]/gi, '') // убираем знаки препинания
+    .replace(/\s+/g, ' ')
+    .replace(/[қа-яё]/gi, function(c) {
+      const map = {
+        'қ': 'к', 'ө': 'о', 'ү': 'у', 'ұ': 'у', 'і': 'и', 'ә': 'а', 'ғ': 'г', 'ң': 'н', 'һ': 'х'
+      };
+      return map[c.toLowerCase()] || c.toLowerCase();
+    });
 }
 
-function matchStudentName(dbName, inputName) {
-  if (!dbName || !inputName) return false;
-  const cleanDb = normalizeKazakhLetters(dbName);
-  const cleanInput = normalizeKazakhLetters(inputName);
+function checkStudentNameMatch(dbName, inputName) {
+  const dbClean = cleanNameForMatching(dbName);
+  const inputClean = cleanNameForMatching(inputName);
   
-  const dbWords = cleanDb.split(/\s+/).filter(Boolean);
-  const inputWords = cleanInput.split(/\s+/).filter(Boolean);
+  if (!dbClean || !inputClean) return false;
   
-  return inputWords.every(word => dbWords.some(dbWord => dbWord.includes(word) || word.includes(dbWord)));
+  // Разделяем введенное имя на отдельные слова
+  const inputWords = inputClean.split(' ').filter(w => w.length > 0);
+  if (inputWords.length === 0) return false;
+  
+  // Проверяем, что каждое введенное слово присутствует в имени из базы данных
+  return inputWords.every(word => dbClean.includes(word));
 }
 
 // ─── ЗАГРУЗКА ДАННЫХ ────────────────────────────────
@@ -1054,7 +1058,7 @@ async function loadAllData() {
   try {
     const { data: dbData, error } = await db
       .from('library_books')
-      .select('id, student_class, student_name, book_title, book_number, status');
+      .select('student_class, student_name, book_title, book_number, status');
 
     if (error) throw error;
     const dbRecords = dbData || [];
@@ -1140,18 +1144,7 @@ function setAuthTab(tab) {
 }
 
 function initAuthClassDropdowns() {
-  const defaultClasses = ["7А", "7Б", "8А", "8Б", "9А", "9Б", "10А", "10Б", "11А", "11Б"];
-  
-  // Combine database classes and defaults
-  const dbClasses = allBooksData.map(r => r.student_class).filter(Boolean);
-  const classesSet = new Set([...defaultClasses, ...dbClasses]);
-  const classes = [...classesSet].sort((a, b) => {
-    const numA = parseInt(a.match(/^\d+/)?.[0] || '0', 10);
-    const numB = parseInt(b.match(/^\d+/)?.[0] || '0', 10);
-    if (numA !== numB) return numA - numB;
-    return a.localeCompare(b, 'ru');
-  });
-
+  const classes = [...new Set(allBooksData.map(r => r.student_class))].sort();
   const select = document.getElementById('login-class-select');
   select.innerHTML = '';
   classes.forEach(c => {
@@ -1196,8 +1189,22 @@ function handleStudentLogin() {
     return;
   }
 
+  // Находим точное имя из базы по fuzzy совпадению
+  const matchedRecord = allBooksData.find(r => 
+    r.student_class === selectedClass && 
+    checkStudentNameMatch(r.student_name, nameInput)
+  );
+
+  let finalName = nameInput;
+  if (matchedRecord) {
+    finalName = matchedRecord.student_name; // Используем точное имя из базы!
+  } else {
+    alert("Ученик с таким именем не найден в списках этого класса. Проверьте правильность написания или зарегистрируйтесь во вкладке 'Регистрация'!");
+    return;
+  }
+
   loggedInStudent = {
-    name: nameInput,
+    name: finalName,
     class: selectedClass,
     theme: 'space-blue',
     id: 'LIB-' + Math.floor(1000 + Math.random()*9000)
@@ -1218,12 +1225,8 @@ async function openStudentPortal() {
   showScreen('student-portal');
   setBreadcrumb(`Кабинет: ${loggedInStudent.name}`);
 
-  // Ищем совпадение в БД для отображения точного написания ФИО
-  const matchDbRecord = allBooksData.find(r => matchStudentName(r.student_name, loggedInStudent.name));
-  const displayName = matchDbRecord ? matchDbRecord.student_name : loggedInStudent.name;
-
   // Рендерим цифровой читательский билет
-  document.getElementById('portal-card-name').textContent = displayName;
+  document.getElementById('portal-card-name').textContent = loggedInStudent.name;
   document.getElementById('portal-card-class').textContent = `Класс: ${loggedInStudent.class}`;
   document.getElementById('portal-card-id').textContent = `ID: ${loggedInStudent.id}`;
   
@@ -1242,8 +1245,8 @@ function renderStudentPortalBooks() {
   tbody.innerHTML = '';
 
   const myBooks = allBooksData.filter(r => 
-    matchStudentName(r.student_name, loggedInStudent.name) && 
-    normalizeClassName(r.student_class) === normalizeClassName(loggedInStudent.class)
+    checkStudentNameMatch(r.student_name, loggedInStudent.name) && 
+    r.student_class === loggedInStudent.class
   );
 
   if (myBooks.length === 0) {
@@ -1252,8 +1255,15 @@ function renderStudentPortalBooks() {
   }
 
   myBooks.forEach(row => {
-    const isLost = row.status === 'lost';
+    // В базе данных статус может быть "Выдано", "lost", "утеряна" и т.д.
+    const isLost = row.status === 'lost' || row.status === 'утеряна';
     const tr = document.createElement('tr');
+    
+    // Кнопка переключения статуса: "Потерял" / "Найдена"
+    const toggleBtn = isLost
+      ? `<button class="btn-action" style="padding:4px 10px; font-size:11px; background:#eff6ff; color:#1d4ed8; font-weight:800; border-radius:8px; border:none; cursor:pointer; margin-top:4px;" onclick="toggleBookStatus('${row.book_title}', '${row.book_number}', 'lost')">🟢 Книга найдена</button>`
+      : `<button class="btn-action" style="padding:4px 10px; font-size:11px; background:#fef2f2; color:#ef4444; font-weight:800; border-radius:8px; border:none; cursor:pointer; margin-top:4px;" onclick="toggleBookStatus('${row.book_title}', '${row.book_number}', 'ok')">⚠️ Потерял</button>`;
+
     tr.innerHTML = `
       <td>
         <div style="font-weight: 800; color: #1e2340; display:flex; align-items:center; gap:8px;">
@@ -1263,15 +1273,12 @@ function renderStudentPortalBooks() {
       </td>
       <td><span class="book-num">${row.book_number}</span></td>
       <td>
-        <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end;">
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
           ${isLost
-            ? `<span class="badge badge-lost" style="margin-bottom:2px;">❌ Утеряна (Блокировка)</span>`
-            : `<span class="badge badge-ok" style="margin-bottom:2px;">✅ На руках</span>`
+            ? `<span class="badge badge-lost">Утеряна (Заблокирован)</span>`
+            : `<span class="badge badge-ok">На руках (Ок)</span>`
           }
-          <button class="btn-catalog" style="padding: 4px 8px; font-size: 11px; border-radius: 8px; font-weight:800; background: ${isLost ? '#ecfdf5; color: #059669;' : '#fff1f2; color: #e11d48;'}" 
-            onclick="toggleBookLost(${row.id || 'null'}, '${row.status || ''}', '${row.student_class}', '${row.student_name.replace(/'/g, "\\'")}', '${row.book_title.replace(/'/g, "\\'")}', '${row.book_number.replace(/'/g, "\\'")}')">
-            ${isLost ? '🟢 Отметить как Найдена' : '⚠️ Отметить как Утеряна'}
-          </button>
+          ${toggleBtn}
         </div>
       </td>
     `;
@@ -1279,42 +1286,38 @@ function renderStudentPortalBooks() {
   });
 }
 
-async function toggleBookLost(id, currentStatus, studentClass, studentName, bookTitle, bookNumber) {
-  const newStatus = currentStatus === 'lost' ? 'Выдано' : 'lost';
+async function toggleBookStatus(bookTitle, bookNumber, currentStatus) {
+  const newStatus = (currentStatus === 'lost') ? 'Выдано' : 'lost';
   
   try {
-    if (id) {
-      const { error } = await db
-        .from('library_books')
-        .update({ status: newStatus })
-        .eq('id', id);
-      if (error) throw error;
-    } else {
-      // Локальное обновление для записей без ID
-      const index = allBooksData.findIndex(r => 
-        r.student_name === studentName && 
-        r.student_class === studentClass && 
-        r.book_title === bookTitle && 
-        r.book_number === bookNumber
-      );
-      if (index !== -1) {
-        allBooksData[index].status = newStatus;
-      }
-    }
-    
-    alert(newStatus === 'lost' 
-      ? `Книга "${bookTitle}" отмечена как УТЕРЯННАЯ. Обходной лист временно заблокирован.` 
-      : `Статус книги "${bookTitle}" изменен на "Выдано" (В наличии).`
+    const matchedBook = allBooksData.find(r => 
+      checkStudentNameMatch(r.student_name, loggedInStudent.name) && 
+      r.student_class === loggedInStudent.class &&
+      r.book_title === bookTitle &&
+      r.book_number === bookNumber
     );
-    
+
+    const targetStudentName = matchedBook ? matchedBook.student_name : loggedInStudent.name;
+
+    const { error } = await db
+      .from('library_books')
+      .update({ status: newStatus })
+      .eq('student_class', loggedInStudent.class)
+      .eq('student_name', targetStudentName)
+      .eq('book_title', bookTitle)
+      .eq('book_number', bookNumber);
+
+    if (error) throw error;
+
+    alert(newStatus === 'lost' 
+      ? "Статус изменен на 'Утеряна'. Обходной лист заблокирован." 
+      : "Статус изменен на 'На руках'. Спасибо!"
+    );
+
     await loadAllData();
-    if (loggedInStudent) {
-      openStudentPortal();
-    } else {
-      goHome();
-    }
+    renderStudentPortalBooks();
   } catch (err) {
-    alert("Не удалось обновить статус книги: " + err.message);
+    alert("Не удалось обновить статус в Supabase: " + err.message);
   }
 }
 
@@ -1346,7 +1349,7 @@ function renderCatalog() {
     const hasFree = free > 0;
     const isReservedByMe = localReservations.some(r => 
       r.book_title.trim() === book.title.trim() && 
-      r.student_name.toLowerCase() === loggedInStudent.name.toLowerCase()
+      checkStudentNameMatch(r.student_name, loggedInStudent.name)
     );
 
     let rightSection = '';
@@ -1767,8 +1770,8 @@ function renderStudentsTable(data) {
     const isLost = row.status === 'lost';
     
     const studentHasAnyLostBook = allBooksData.some(r => 
-      r.student_name.toLowerCase() === row.student_name.toLowerCase() && 
-      r.status === 'lost'
+      checkStudentNameMatch(r.student_name, row.student_name) && 
+      (r.status === 'lost' || r.status === 'утеряна')
     );
 
     const tr = document.createElement('tr');
