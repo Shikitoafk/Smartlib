@@ -821,7 +821,9 @@
         </div>
         <div class="form-group" style="margin-bottom:0; flex:1 1 200px;">
           <label class="form-label" style="font-size:11px; margin-bottom:4px; font-weight:800; color:#9099c0; text-transform:uppercase;">Предмет / Книга</label>
-          <input type="text" id="owner-search-subject" class="form-input" style="padding:10px 14px; font-size:13px; border-radius:10px; margin-bottom:0; height:42px;" placeholder="Например, Алгебра..." onkeydown="if(event.key === 'Enter') searchBookOwner()" />
+          <select class="form-select" id="owner-search-subject" style="padding:10px 14px; font-size:13px; border-radius:10px; margin-bottom:0; height:42px;">
+            <option value="all">🔍 Все предметы</option>
+          </select>
         </div>
         <div class="form-group" style="margin-bottom:0; flex:1 1 150px;">
           <label class="form-label" style="font-size:11px; margin-bottom:4px; font-weight:800; color:#9099c0; text-transform:uppercase;">Инв. Номер</label>
@@ -1431,6 +1433,9 @@ async function openStudentPortal() {
 
   // Выводим чат и находки
   renderCommunityPosts();
+
+  // Заполняем выпадающий список предметов
+  populateSearchSubjectDropdown();
 }
 
 function renderStudentPortalBooks() {
@@ -1597,14 +1602,14 @@ async function addCommunityPost(messageText, type = 'chat') {
 
 function searchBookOwner() {
   const selClass = document.getElementById('owner-search-class').value;
-  const subKeyword = document.getElementById('owner-search-subject').value.trim().toLowerCase();
+  const selSubject = document.getElementById('owner-search-subject').value;
   const invNum = document.getElementById('owner-search-number').value.trim().toLowerCase();
   
   const resultDiv = document.getElementById('owner-search-result');
   if (!resultDiv) return;
 
-  if (!invNum && !subKeyword && selClass === 'all') {
-    resultDiv.innerHTML = `<span style="color:#ef4444; font-size:13px;">Пожалуйста, введите хотя бы инвентарный номер или предмет для поиска!</span>`;
+  if (!invNum && selSubject === 'all' && selClass === 'all') {
+    resultDiv.innerHTML = `<span style="color:#ef4444; font-size:13px;">Пожалуйста, укажите хотя бы один параметр для поиска!</span>`;
     return;
   }
 
@@ -1614,7 +1619,7 @@ function searchBookOwner() {
     if (selClass !== 'all' && b.student_class !== selClass) return false;
     
     // 2. Предмет
-    if (subKeyword && !b.book_title.toLowerCase().includes(subKeyword)) return false;
+    if (selSubject !== 'all' && b.book_title.trim().toLowerCase() !== selSubject.trim().toLowerCase()) return false;
     
     // 3. Инвентарный номер
     if (invNum && (!b.book_number || b.book_number.toString().toLowerCase().trim() !== invNum)) return false;
@@ -1640,7 +1645,7 @@ function searchBookOwner() {
   } else {
     let criteria = [];
     if (selClass !== 'all') criteria.push(`класс ${selClass}`);
-    if (subKeyword) criteria.push(`предмет "${subKeyword}"`);
+    if (selSubject !== 'all') criteria.push(`предмет "${selSubject}"`);
     if (invNum) criteria.push(`номер ${invNum}`);
     
     resultDiv.innerHTML = `
@@ -1649,6 +1654,27 @@ function searchBookOwner() {
       </div>
     `;
   }
+}
+
+function populateSearchSubjectDropdown() {
+  const selectEl = document.getElementById('owner-search-subject');
+  if (!selectEl) return;
+  
+  // Получаем уникальные предметы из выданных книг
+  const dbTitles = allBooksData.map(b => b.book_title.trim());
+  
+  // Получаем уникальные книги из каталога
+  const catalogTitles = CATALOG_DATABASE.map(b => b.title.trim());
+  
+  // Объединяем и убираем дубликаты
+  const uniqueTitles = [...new Set([...dbTitles, ...catalogTitles])]
+    .filter(t => t.length > 0)
+    .sort((a, b) => a.localeCompare(b));
+    
+  selectEl.innerHTML = `<option value="all">🔍 Все предметы / книги</option>`;
+  uniqueTitles.forEach(title => {
+    selectEl.innerHTML += `<option value="${esc(title)}">${esc(title)}</option>`;
+  });
 }
 
 function setChatFilter(filter) {
