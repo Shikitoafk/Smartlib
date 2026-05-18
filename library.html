@@ -453,6 +453,25 @@
     }
     .pdf-nav-btn:hover { background: #f0f4ff; }
 
+    /* ── COMMUNITY BOARD STYLES ── */
+    .chat-post {
+      display: flex; flex-direction: column; padding: 12px 14px; border-radius: 14px;
+      background: #f8fafd; border: 1.5px solid #f0f4ff; transition: transform 0.15s;
+      margin-bottom: 2px; text-align: left;
+    }
+    .chat-post:hover { transform: translateY(-1px); }
+    .chat-post.found { border-color: #a7f3d0; background: #f0fdf4; }
+    .chat-post.lost  { border-color: #fecdd3; background: #fff5f5; }
+
+    .chat-post-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .chat-post-author { font-weight: 800; font-size: 13px; color: #1e2340; display: flex; align-items: center; gap: 6px; }
+    .chat-post-class { font-size: 10px; background: #eef2ff; color: #3b6ef6; padding: 1px 6px; border-radius: 99px; font-weight: 700; }
+    .chat-post-header.found .chat-post-class { background: #d1fae5; color: #065f46; }
+    .chat-post-header.lost .chat-post-class { background: #ffe4e6; color: #991b1b; }
+
+    .chat-post-time { font-size: 10px; color: #9099c0; font-weight: 700; }
+    .chat-post-body { font-size: 13px; color: #2d3748; line-height: 1.4; word-break: break-word; }
+
     /* ── HIDDEN ── */
     .hidden { display: none !important; }
 
@@ -519,6 +538,9 @@
     <div class="page-title">Выберите класс</div>
     <div class="page-sub">Учёт школьных учебников</div>
     <div class="grades-grid" id="grades-grid"></div>
+
+    <!-- Чат и Находки библиотекаря -->
+    <div id="librarian-community-container" style="margin-top: 32px;"></div>
   </div>
 
   <!-- ════════════════════════
@@ -747,6 +769,9 @@
         <tbody id="portal-books-tbody"></tbody>
       </table>
     </div>
+
+    <!-- Чат и Находки ученика -->
+    <div id="student-community-container" style="margin-top: 24px; margin-bottom: 24px;"></div>
 
     <!-- Электронный каталог и бронь -->
     <div class="section-title">🔍 Электронный каталог литературы</div>
@@ -1004,6 +1029,10 @@ let currentRole = 'librarian'; // 'librarian' | 'student'
 let loggedInStudent = null; // { name, class, theme, id }
 let regSelectedTheme = 'space-blue';
 
+// Состояние сообщества (Общий чат и Находки)
+let communityPosts = [];
+let currentChatFilter = 'all';
+
 // Состояние PDF ридера
 let currentPdfBook = '';
 let currentPdfPage = 0;
@@ -1238,6 +1267,9 @@ async function openStudentPortal() {
 
   // Выводим каталог художественной литературы
   renderCatalog();
+
+  // Выводим чат и находки
+  renderCommunityPosts();
 }
 
 function renderStudentPortalBooks() {
@@ -1319,6 +1351,185 @@ async function toggleBookStatus(bookTitle, bookNumber, currentStatus) {
   } catch (err) {
     alert("Не удалось обновить статус в Supabase: " + err.message);
   }
+}
+
+// ─────────────────────────────────────────────
+//  СООБЩЕСТВО И НАХОДКИ КНИГ (ОБЩИЙ ЧАТ)
+// ─────────────────────────────────────────────
+async function loadCommunityPosts() {
+  try {
+    const { data, error } = await db
+      .from('library_chat')
+      .select('*')
+      .order('created_at', { ascending: false });
+      
+    if (error) throw error;
+    communityPosts = data || [];
+  } catch (err) {
+    // Резервный вариант: localStorage, если таблицы library_chat нет
+    const localData = localStorage.getItem('smartlib_chat_fallback');
+    if (localData) {
+      communityPosts = JSON.parse(localData);
+    } else {
+      communityPosts = [
+        { name: "Библиотекарь", class: "👨‍🏫", message: "Приветствуем в чате SmartLib! Здесь можно общаться и сообщать о найденных книгах.", type: "chat", created_at: new Date(Date.now() - 3600000).toISOString() },
+        { name: "Қадылбеков Ринат", class: "10А", message: "Нашел учебник Истории на скамейке возле спортзала. Оставил на вахте!", type: "found", created_at: new Date(Date.now() - 1800000).toISOString() },
+        { name: "Аманжол Мадина", class: "11Б", message: "Потеряла синюю тетрадь по Алгебре. Кто видел, напишите, пожалуйста!", type: "lost", created_at: new Date(Date.now() - 900000).toISOString() },
+      ];
+      localStorage.setItem('smartlib_chat_fallback', JSON.stringify(communityPosts));
+    }
+  }
+  renderCommunityPosts();
+}
+
+async function addCommunityPost(messageText, type = 'chat') {
+  if (!messageText.trim()) return;
+  
+  const posterName = loggedInStudent ? loggedInStudent.name : "Библиотекарь";
+  const posterClass = loggedInStudent ? loggedInStudent.class : "👨‍🏫";
+  
+  const newPost = {
+    name: posterName,
+    class: posterClass,
+    message: messageText.trim(),
+    type: type,
+    created_at: new Date().toISOString()
+  };
+  
+  try {
+    const { error } = await db.from('library_chat').insert([newPost]);
+    if (error) throw error;
+    await loadCommunityPosts();
+  } catch (err) {
+    // Локальная вставка в localStorage в случае отсутствия таблицы
+    communityPosts.unshift(newPost);
+    localStorage.setItem('smartlib_chat_fallback', JSON.stringify(communityPosts));
+    renderCommunityPosts();
+  }
+}
+
+function setChatFilter(filter) {
+  currentChatFilter = filter;
+  renderCommunityPosts();
+}
+
+function renderCommunityPosts() {
+  renderCommunityBoard('student-community-container', 'stud-chat');
+  renderCommunityBoard('librarian-community-container', 'lib-chat');
+}
+
+function renderCommunityBoard(containerId, prefix) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const filter = currentChatFilter;
+
+  container.innerHTML = `
+    <div class="section-title">💬 Сообщество и Находки книг</div>
+    <div class="community-board" style="background:var(--white); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:16px;">
+      
+      <!-- Фильтры типа постов -->
+      <div style="display:flex; gap:6px; border-bottom: 2px solid #f0f4ff; padding-bottom:12px;">
+        <button class="tab-auth ${filter === 'all' ? 'active' : ''}" style="font-size:13px;" onclick="setChatFilter('all')">Все</button>
+        <button class="tab-auth ${filter === 'chat' ? 'active' : ''}" style="font-size:13px;" onclick="setChatFilter('chat')">💬 Чат</button>
+        <button class="tab-auth ${filter === 'found' ? 'active' : ''}" style="font-size:13px; color:#059669;" onclick="setChatFilter('found')">🟢 Находки</button>
+        <button class="tab-auth ${filter === 'lost' ? 'active' : ''}" style="font-size:13px; color:#e11d48;" onclick="setChatFilter('lost')">🔴 Потери</button>
+      </div>
+
+      <!-- Лента сообщений -->
+      <div id="${prefix}-messages" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 6px;">
+        <!-- Сообщения -->
+      </div>
+
+      <!-- Поле ввода нового сообщения -->
+      <div style="border-top:1.5px solid #f0f4ff; padding-top:12px; display:flex; flex-direction:column; gap:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+          <span style="font-size:11px; font-weight:800; color:#9099c0; text-transform:uppercase;">Тип публикации:</span>
+          <select id="${prefix}-post-type" class="form-select" style="padding:4px 8px; font-size:11px; width:auto; border-radius:8px; border-color:#e8ecf8; margin-bottom:0;">
+            <option value="chat">💬 Сообщение в чат</option>
+            <option value="found">🟢 Я нашел книгу (Находка)</option>
+            <option value="lost">🔴 Я потерял книгу (Утеряно)</option>
+          </select>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="${prefix}-input" class="form-input" style="padding:10px 14px; font-size:13px; border-radius:10px;" placeholder="Напишите сообщение..." onkeydown="if(event.key === 'Enter') submitNewPost('${prefix}')" />
+          <button class="btn-submit" style="width:auto; padding:10px 18px; margin-top:0; border-radius:10px; font-size:13px;" onclick="submitNewPost('${prefix}')">Отправить</button>
+        </div>
+      </div>
+
+    </div>
+  `;
+
+  const msgContainer = document.getElementById(`${prefix}-messages`);
+  if (!msgContainer) return;
+
+  const filteredPosts = communityPosts.filter(p => {
+    if (filter === 'all') return true;
+    return p.type === filter;
+  });
+
+  if (filteredPosts.length === 0) {
+    msgContainer.innerHTML = `<div class="empty" style="padding: 20px 0;">Лента пуста. Будьте первыми!</div>`;
+    return;
+  }
+
+  filteredPosts.forEach(post => {
+    const isFound = post.type === 'found';
+    const isLost = post.type === 'lost';
+    
+    let typeClass = '';
+    let typeLabel = post.class;
+    if (isFound) {
+      typeClass = 'found';
+      typeLabel = `🔍 Находка от ${post.class}`;
+    } else if (isLost) {
+      typeClass = 'lost';
+      typeLabel = `⚠️ Потеря от ${post.class}`;
+    }
+
+    const timeStr = formatPostTime(post.created_at);
+
+    const postEl = document.createElement('div');
+    postEl.className = `chat-post ${typeClass}`;
+    postEl.innerHTML = `
+      <div class="chat-post-header ${typeClass}">
+        <span class="chat-post-author">
+          ${post.name}
+          <span class="chat-post-class">${typeLabel}</span>
+        </span>
+        <span class="chat-post-time">${timeStr}</span>
+      </div>
+      <div class="chat-post-body">${esc(post.message)}</div>
+    `;
+    msgContainer.appendChild(postEl);
+  });
+
+  msgContainer.scrollTop = 0;
+}
+
+function formatPostTime(isoString) {
+  try {
+    const d = new Date(isoString);
+    const hrs = String(d.getHours()).padStart(2, '0');
+    const mins = String(d.getMinutes()).padStart(2, '0');
+    return `${hrs}:${mins}`;
+  } catch (e) {
+    return '';
+  }
+}
+
+async function submitNewPost(prefix) {
+  const inputEl = document.getElementById(`${prefix}-input`);
+  const typeEl = document.getElementById(`${prefix}-post-type`);
+  
+  if (!inputEl) return;
+  const msg = inputEl.value.trim();
+  const type = typeEl ? typeEl.value : 'chat';
+  
+  if (!msg) return;
+  
+  inputEl.value = '';
+  await addCommunityPost(msg, type);
 }
 
 // ─── ЭЛЕКТРОННЫЙ КАТАЛОГ И БРОНИРОВАНИЕ ────────
@@ -1627,6 +1838,10 @@ async function init() {
   if (allBooksData.length === 0) {
     await loadAllData();
   }
+
+  // Загружаем посты сообщества
+  await loadCommunityPosts();
+  renderCommunityPosts();
 
   if (allBooksData.length === 0) {
     grid.innerHTML = '<div class="empty" style="grid-column: 1 / -1;">Нет доступных данных</div>';
