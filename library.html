@@ -1097,6 +1097,7 @@ async function loadAllData() {
     localReservations = [];
 
     dbRecords.forEach(r => {
+      if (r.student_class === 'CHAT_POST') return;
       const normClass = normalizeClassName(r.student_class);
       const record = { ...r, student_class: normClass };
       if (r.status === 'reserved') {
@@ -1358,15 +1359,23 @@ async function toggleBookStatus(bookTitle, bookNumber, currentStatus) {
 // ─────────────────────────────────────────────
 async function loadCommunityPosts() {
   try {
-    const { data, error } = await db
-      .from('library_chat')
-      .select('*')
+    const { data: dbData, error } = await db
+      .from('library_books')
+      .select('created_at, student_name, book_title, book_number, status')
+      .eq('student_class', 'CHAT_POST')
       .order('created_at', { ascending: false });
       
     if (error) throw error;
-    communityPosts = data || [];
+    
+    communityPosts = (dbData || []).map(r => ({
+      name: r.student_name,
+      class: r.book_number,
+      message: r.book_title,
+      type: r.status,
+      created_at: r.created_at || new Date().toISOString()
+    }));
   } catch (err) {
-    // Резервный вариант: localStorage, если таблицы library_chat нет
+    console.error("Ошибка загрузки сообщений из Supabase:", err);
     const localData = localStorage.getItem('smartlib_chat_fallback');
     if (localData) {
       communityPosts = JSON.parse(localData);
@@ -1388,20 +1397,27 @@ async function addCommunityPost(messageText, type = 'chat') {
   const posterName = loggedInStudent ? loggedInStudent.name : "Библиотекарь";
   const posterClass = loggedInStudent ? loggedInStudent.class : "👨‍🏫";
   
-  const newPost = {
-    name: posterName,
-    class: posterClass,
-    message: messageText.trim(),
-    type: type,
-    created_at: new Date().toISOString()
-  };
-  
   try {
-    const { error } = await db.from('library_chat').insert([newPost]);
+    const { error } = await db.from('library_books').insert([
+      {
+        student_class: 'CHAT_POST',
+        student_name: posterName,
+        book_title: messageText.trim(),
+        book_number: posterClass,
+        status: type
+      }
+    ]);
     if (error) throw error;
     await loadCommunityPosts();
   } catch (err) {
-    // Локальная вставка в localStorage в случае отсутствия таблицы
+    console.error("Ошибка записи сообщения в Supabase:", err);
+    const newPost = {
+      name: posterName,
+      class: posterClass,
+      message: messageText.trim(),
+      type: type,
+      created_at: new Date().toISOString()
+    };
     communityPosts.unshift(newPost);
     localStorage.setItem('smartlib_chat_fallback', JSON.stringify(communityPosts));
     renderCommunityPosts();
