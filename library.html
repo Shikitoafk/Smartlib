@@ -799,12 +799,35 @@
     <!-- Поиск владельца книги по инвентарному номеру -->
     <div class="section-title">🔍 Нашли учебник? Поиск владельца по инвентарному номеру</div>
     <div style="background:var(--white); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); margin-bottom:24px; text-align: left;">
-      <p style="font-size:13px; color:#4a5280; margin-bottom:12px; font-weight:700; line-height: 1.4;">
-        Если вы нашли чужой учебник, введите его инвентарный номер ниже. Система проверит базу выданных книг и мгновенно покажет владельца и его класс, чтобы вы могли легко вернуть книгу.
+      <p style="font-size:13px; color:#4a5280; margin-bottom:16px; font-weight:700; line-height: 1.4;">
+        Заполните параметры ниже (можно указать только инвентарный номер, либо сузить поиск с помощью класса и предмета):
       </p>
-      <div style="display:flex; gap:10px;">
-        <input type="text" id="owner-search-input" class="form-input" style="padding:10px 14px; font-size:13px; border-radius:10px;" placeholder="Введите инвентарный номер учебника (например, 412)..." onkeydown="if(event.key === 'Enter') searchBookOwner()" />
-        <button class="btn-submit" style="width:auto; padding:10px 18px; margin-top:0; border-radius:10px; font-size:13px;" onclick="searchBookOwner()">Найти владельца</button>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end;">
+        <div class="form-group" style="margin-bottom:0; flex:1 1 150px;">
+          <label class="form-label" style="font-size:11px; margin-bottom:4px; font-weight:800; color:#9099c0; text-transform:uppercase;">Класс</label>
+          <select class="form-select" id="owner-search-class" style="padding:10px 14px; font-size:13px; border-radius:10px; margin-bottom:0; height:42px;">
+            <option value="all">🔍 Все классы</option>
+            <option value="7А">7А класс</option>
+            <option value="7Б">7Б класс</option>
+            <option value="8А">8А класс</option>
+            <option value="8Б">8Б класс</option>
+            <option value="9А">9А класс</option>
+            <option value="9Б">9Б класс</option>
+            <option value="10А">10А класс</option>
+            <option value="10Б">10Б класс</option>
+            <option value="11А">11А класс</option>
+            <option value="11Б">11Б класс</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0; flex:1 1 200px;">
+          <label class="form-label" style="font-size:11px; margin-bottom:4px; font-weight:800; color:#9099c0; text-transform:uppercase;">Предмет / Книга</label>
+          <input type="text" id="owner-search-subject" class="form-input" style="padding:10px 14px; font-size:13px; border-radius:10px; margin-bottom:0; height:42px;" placeholder="Например, Алгебра..." onkeydown="if(event.key === 'Enter') searchBookOwner()" />
+        </div>
+        <div class="form-group" style="margin-bottom:0; flex:1 1 150px;">
+          <label class="form-label" style="font-size:11px; margin-bottom:4px; font-weight:800; color:#9099c0; text-transform:uppercase;">Инв. Номер</label>
+          <input type="text" id="owner-search-number" class="form-input" style="padding:10px 14px; font-size:13px; border-radius:10px; margin-bottom:0; height:42px;" placeholder="Например, 45..." onkeydown="if(event.key === 'Enter') searchBookOwner()" />
+        </div>
+        <button class="btn-submit" style="width:auto; padding:0 22px; margin-top:0; border-radius:10px; font-size:13px; height:42px; font-weight:800; flex:0 0 auto;" onclick="searchBookOwner()">Найти владельца</button>
       </div>
       <div id="owner-search-result" style="margin-top:12px; font-weight:700;"></div>
     </div>
@@ -1573,32 +1596,56 @@ async function addCommunityPost(messageText, type = 'chat') {
 }
 
 function searchBookOwner() {
-  const inputVal = document.getElementById('owner-search-input').value.trim();
+  const selClass = document.getElementById('owner-search-class').value;
+  const subKeyword = document.getElementById('owner-search-subject').value.trim().toLowerCase();
+  const invNum = document.getElementById('owner-search-number').value.trim().toLowerCase();
+  
   const resultDiv = document.getElementById('owner-search-result');
   if (!resultDiv) return;
 
-  if (!inputVal) {
-    resultDiv.innerHTML = `<span style="color:#ef4444; font-size:13px;">Пожалуйста, введите номер книги!</span>`;
+  if (!invNum && !subKeyword && selClass === 'all') {
+    resultDiv.innerHTML = `<span style="color:#ef4444; font-size:13px;">Пожалуйста, введите хотя бы инвентарный номер или предмет для поиска!</span>`;
     return;
   }
 
-  // Ищем совпадение в allBooksData по book_number
-  const matched = allBooksData.find(b => 
-    b.book_number && b.book_number.toString().toLowerCase().trim() === inputVal.toLowerCase()
-  );
+  // Фильтруем matches среди allBooksData
+  const matches = allBooksData.filter(b => {
+    // 1. Класс
+    if (selClass !== 'all' && b.student_class !== selClass) return false;
+    
+    // 2. Предмет
+    if (subKeyword && !b.book_title.toLowerCase().includes(subKeyword)) return false;
+    
+    // 3. Инвентарный номер
+    if (invNum && (!b.book_number || b.book_number.toString().toLowerCase().trim() !== invNum)) return false;
+    
+    return true;
+  });
 
-  if (matched) {
-    resultDiv.innerHTML = `
-      <div style="padding:12px 14px; background:#f0fdf4; border:1.5px solid #a7f3d0; border-radius:10px; color:#065f46; display:flex; flex-direction:column; gap:4px; text-align:left;">
-        <div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; color:#059669;">🟢 Учебник найден!</div>
-        <div style="font-size:15px; font-weight:800; color:#1e293b;">Владелец: ${matched.student_name} (${matched.student_class} класс)</div>
-        <div style="font-size:12px; color:#475569; font-weight:500;">Книга: <span style="font-weight:700; color:#1e2340;">${matched.book_title}</span> | Инв. №: <span style="font-weight:700; color:#1e2340;">${matched.book_number}</span></div>
-      </div>
-    `;
+  if (matches.length > 0) {
+    let html = `<div style="display:flex; flex-direction:column; gap:10px; margin-top:12px;">`;
+    
+    matches.forEach(matched => {
+      html += `
+        <div style="padding:12px 14px; background:#f0fdf4; border:1.5px solid #a7f3d0; border-radius:10px; color:#065f46; display:flex; flex-direction:column; gap:4px; text-align:left;">
+          <div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; color:#059669;">🟢 Учебник закреплен:</div>
+          <div style="font-size:15px; font-weight:800; color:#1e293b;">Владелец: ${matched.student_name} (${matched.student_class} класс)</div>
+          <div style="font-size:12px; color:#475569; font-weight:500;">Книга: <span style="font-weight:700; color:#1e2340;">${matched.book_title}</span> | Инв. №: <span style="font-weight:700; color:#1e2340;">${matched.book_number}</span></div>
+        </div>
+      `;
+    });
+    
+    html += `</div>`;
+    resultDiv.innerHTML = html;
   } else {
+    let criteria = [];
+    if (selClass !== 'all') criteria.push(`класс ${selClass}`);
+    if (subKeyword) criteria.push(`предмет "${subKeyword}"`);
+    if (invNum) criteria.push(`номер ${invNum}`);
+    
     resultDiv.innerHTML = `
-      <div style="padding:12px 14px; background:#fff5f5; border:1.5px solid #fecdd3; border-radius:10px; color:#991b1b; text-align:left; font-size:13px;">
-        ❌ Учебник с инвентарным номером <strong>"${esc(inputVal)}"</strong> не числится ни за одним учеником в системе.
+      <div style="padding:12px 14px; background:#fff5f5; border:1.5px solid #fecdd3; border-radius:10px; color:#991b1b; text-align:left; font-size:13px; margin-top:12px;">
+        ❌ Учебник по параметрам (<strong>${criteria.join(', ')}</strong>) не числится ни за одним учеником в нашей базе.
       </div>
     `;
   }
