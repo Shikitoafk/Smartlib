@@ -26,6 +26,7 @@
       background: var(--bg);
       min-height: 100vh;
       color: #1e2340;
+      transition: background 0.3s;
     }
 
     /* ── HEADER ── */
@@ -37,8 +38,9 @@
     .header-inner {
       max-width: 700px; margin: 0 auto;
       padding: 14px 20px;
-      display: flex; align-items: center; gap: 12px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
     }
+    .header-left { display: flex; align-items: center; gap: 12px; }
     .logo {
       width: 40px; height: 40px; border-radius: 14px;
       background: linear-gradient(135deg, #3b6ef6, #8b5cf6);
@@ -47,12 +49,28 @@
       transition: transform 0.15s;
     }
     .logo:hover { transform: scale(1.07); }
-    .header-text { flex: 1; }
+    .header-text { }
     .header-title { font-size: 15px; font-weight: 800; color: #1e2340; }
     .breadcrumb { font-size: 12px; color: #9099c0; margin-top: 1px; font-weight: 600; }
 
+    /* ── ROLE SWITCHER (PILL) ── */
+    .role-selector {
+      background: #f0f4ff; padding: 4px; border-radius: 99px;
+      display: flex; gap: 4px; border: 1.5px solid #e8ecf8;
+    }
+    .btn-role {
+      border: none; background: transparent; font-family: 'Nunito', sans-serif;
+      font-size: 12px; font-weight: 800; padding: 6px 14px; border-radius: 99px;
+      cursor: pointer; color: #4a5280; transition: all 0.2s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .btn-role.active {
+      background: var(--white); color: #3b6ef6;
+      box-shadow: 0 2px 8px rgba(80,100,180,0.12);
+    }
+
     /* ── MAIN ── */
-    main { max-width: 700px; margin: 0 auto; padding: 32px 20px 80px; }
+    main { max-width: 700px; margin: 0 auto; padding: 24px 20px 80px; }
 
     /* ── SCREENS ── */
     .screen { display: none; }
@@ -64,10 +82,11 @@
 
     /* ── PAGE TITLE ── */
     .page-title { font-size: 26px; font-weight: 900; color: #1e2340; margin-bottom: 4px; }
-    .page-sub   { font-size: 13px; color: #9099c0; font-weight: 600; margin-bottom: 28px; }
+    .page-sub   { font-size: 13px; color: #9099c0; font-weight: 600; margin-bottom: 24px; }
 
     /* ── BACK BTN ── */
-    .back-row { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+    .back-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 24px; }
+    .back-left { display: flex; align-items: center; gap: 12px; }
     .btn-back {
       display: inline-flex; align-items: center; gap: 6px;
       background: var(--white); border: none; border-radius: 12px;
@@ -118,13 +137,30 @@
       font-size: 50px; font-weight: 900; line-height: 1;
       letter-spacing: -2px; position: relative;
     }
-    .grade-label {
-      font-size: 13px; font-weight: 800; margin-top: 6px; position: relative;
-    }
     .grade-count {
       font-size: 11px; font-weight: 700; margin-top: 4px;
       opacity: 0.6; position: relative;
     }
+
+    /* ── REPORTS BUTTON CARD ── */
+    .report-shortcut-card {
+      background: linear-gradient(135deg, #1e2340, #3a4276);
+      border-radius: var(--radius); padding: 20px;
+      color: white; margin-bottom: 20px; display: flex;
+      align-items: center; justify-content: space-between;
+      box-shadow: var(--shadow); cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .report-shortcut-card:hover {
+      transform: translateY(-2px); box-shadow: var(--shadow-hover);
+    }
+    .report-shortcut-left { display: flex; align-items: center; gap: 14px; }
+    .report-shortcut-icon {
+      font-size: 32px; width: 50px; height: 50px; border-radius: 14px;
+      background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center;
+    }
+    .report-shortcut-title { font-weight: 800; font-size: 16px; }
+    .report-shortcut-sub { font-size: 12px; color: #b8bfd8; margin-top: 2px; }
 
     /* ── SUBJECT LIST ── */
     .subjects-list { display: flex; flex-direction: column; gap: 10px; }
@@ -167,6 +203,7 @@
     .badge-ok   { background: #ecfdf5; color: #059669; }
     .badge-lost { background: #fff1f2; color: #e11d48; }
     .badge-warn { background: #fffbeb; color: #d97706; }
+    .badge-lock { background: #fef2f2; color: #ef4444; border: 1px solid #fee2e2; }
 
     /* ── STATS ROW ── */
     .stats-row { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
@@ -191,7 +228,7 @@
     tbody tr { border-top: 1px solid #f0f4ff; transition: background 0.1s; }
     tbody tr:hover { background: #f8fafd; }
     td { padding: 11px 16px; }
-    .student-name { font-weight: 800; color: #1e2340; }
+    .student-name { font-weight: 800; color: #1e2340; display: flex; align-items: center; gap: 6px; }
     .student-class { color: #9099c0; font-weight: 600; }
     .book-num { font-family: monospace; font-size: 13px; color: #4a5280; font-weight: 700; background: #f0f4ff; padding: 2px 8px; border-radius: 6px; }
     td:last-child { text-align: right; }
@@ -223,23 +260,238 @@
       color: #b8bfd8; pointer-events: none;
     }
 
+    /* ── DEBTORS PANEL ── */
+    .action-row { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .btn-action {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--white); border: none; border-radius: 12px;
+      padding: 10px 18px; font-size: 13px; font-weight: 800;
+      color: #1e2340; cursor: pointer; box-shadow: var(--shadow);
+      font-family: 'Nunito', sans-serif; transition: all 0.15s;
+    }
+    .btn-action:hover { background: #f0f4ff; transform: translateY(-1px); }
+    .btn-action-primary {
+      background: #3b6ef6; color: white;
+    }
+    .btn-action-primary:hover { background: #2563eb; color: white; }
+
+    .debtor-class-card {
+      background: var(--white); border-radius: var(--radius);
+      padding: 20px; box-shadow: var(--shadow); margin-bottom: 16px;
+    }
+    .debtor-class-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1.5px solid #f0f4ff;
+    }
+    .debtor-class-title { font-weight: 900; font-size: 18px; color: #1e2340; }
+
+    /* ── STUDENT PORTAL ── */
+    .portal-container { max-width: 460px; margin: 0 auto; }
+    .auth-card {
+      background: var(--white); border-radius: var(--radius);
+      padding: 32px 24px; box-shadow: var(--shadow);
+    }
+    .tabs-auth { display: flex; gap: 12px; margin-bottom: 24px; border-bottom: 2px solid #f0f4ff; padding-bottom: 12px; }
+    .tab-auth {
+      background: none; border: none; font-family: 'Nunito', sans-serif;
+      font-size: 16px; font-weight: 800; color: #9099c0; cursor: pointer;
+      position: relative; padding: 4px 8px;
+    }
+    .tab-auth.active { color: #3b6ef6; }
+    .tab-auth.active::after {
+      content: ''; position: absolute; bottom: -14px; left: 0; right: 0; height: 3.5px;
+      background: #3b6ef6; border-radius: 99px;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+    .form-label { font-size: 12px; font-weight: 800; color: #4a5280; text-transform: uppercase; letter-spacing: 0.05em; }
+    .form-input, .form-select {
+      width: 100%; padding: 12px 16px; border: 2px solid #e8ecf8; border-radius: 14px;
+      font-size: 14px; font-weight: 700; font-family: 'Nunito', sans-serif;
+      color: #1e2340; outline: none; background: var(--white);
+      transition: border-color 0.15s;
+    }
+    .form-input:focus, .form-select:focus { border-color: #3b6ef6; }
+    
+    .theme-picker { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 8px; }
+    .theme-btn {
+      aspect-ratio: 1; border-radius: 50%; border: 3px solid transparent; cursor: pointer;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    .theme-btn.active { border-color: #1e2340; transform: scale(1.1); }
+    .btn-submit {
+      width: 100%; padding: 14px; border: none; border-radius: 14px;
+      background: linear-gradient(135deg, #3b6ef6, #8b5cf6); color: white;
+      font-size: 15px; font-weight: 800; font-family: 'Nunito', sans-serif;
+      cursor: pointer; box-shadow: 0 4px 12px rgba(59,110,246,0.25);
+      transition: transform 0.15s, box-shadow 0.15s; margin-top: 10px;
+    }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(59,110,246,0.35); }
+
+    /* ── LIBRARY CARD (PREMIUM) ── */
+    .library-card {
+      border-radius: 24px; padding: 24px; color: white;
+      position: relative; overflow: hidden; display: flex; flex-direction: column;
+      justify-content: space-between; height: 190px;
+      box-shadow: 0 12px 28px rgba(30,35,64,0.15); margin-bottom: 28px;
+      transition: transform 0.25s, box-shadow 0.25s;
+    }
+    .library-card:hover { transform: translateY(-4px); box-shadow: 0 16px 36px rgba(30,35,64,0.25); }
+    .card-glow {
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.22) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .library-card.space-blue   { background: linear-gradient(135deg, #1e3a8a, #3b82f6); }
+    .library-card.emerald-mint  { background: linear-gradient(135deg, #064e3b, #10b981); }
+    .library-card.sunset-orange { background: linear-gradient(135deg, #7c2d12, #f97316); }
+    .library-card.neon-purple   { background: linear-gradient(135deg, #581c87, #a855f7); }
+
+    .card-header { display: flex; justify-content: space-between; font-weight: 800; font-size: 13px; opacity: 0.95; }
+    .card-logo { letter-spacing: 1px; display: flex; align-items: center; gap: 6px; }
+    .card-type { font-size: 9px; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 6px; font-weight: 900; }
+    .card-body { margin-top: 14px; }
+    .card-name { font-size: 23px; font-weight: 900; letter-spacing: -0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+    .card-class { font-size: 13px; font-weight: 700; opacity: 0.9; margin-top: 3px; }
+    .card-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto; }
+    .card-barcode { opacity: 0.85; color: white; }
+    .card-id { font-family: monospace; font-size: 12px; opacity: 0.85; }
+
+    /* ── SECTION HEADER ── */
+    .section-title { font-size: 18px; font-weight: 900; color: #1e2340; margin: 24px 0 12px; display: flex; align-items: center; gap: 8px; }
+
+    /* ── CATALOG CARD ── */
+    .catalog-list { display: flex; flex-direction: column; gap: 12px; }
+    .catalog-card {
+      background: var(--white); border-radius: 16px; padding: 16px;
+      display: flex; justify-content: space-between; align-items: center; gap: 16px;
+      box-shadow: var(--shadow); transition: transform 0.15s;
+    }
+    .catalog-card:hover { transform: translateY(-2px); }
+    .catalog-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
+    .catalog-cover {
+      width: 46px; height: 58px; border-radius: 8px; background: #eef2ff;
+      display: flex; align-items: center; justify-content: center; font-size: 24px;
+      flex-shrink: 0; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+    }
+    .catalog-info { min-width: 0; }
+    .catalog-title { font-size: 14px; font-weight: 800; color: #1e2340; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .catalog-author { font-size: 11px; color: #9099c0; font-weight: 600; margin-top: 1px; }
+    .catalog-copies { font-size: 11px; color: #3b6ef6; font-weight: 700; margin-top: 4px; }
+    
+    .catalog-right { display: flex; gap: 8px; flex-shrink: 0; align-items: center; }
+    .btn-catalog {
+      border: none; border-radius: 10px; padding: 8px 12px; font-family: 'Nunito', sans-serif;
+      font-size: 12px; font-weight: 800; cursor: pointer; transition: all 0.15s;
+    }
+    .btn-catalog-borrow { background: #3b6ef6; color: white; }
+    .btn-catalog-borrow:hover { background: #2563eb; }
+    .btn-catalog-reserve { background: #fffbeb; color: #d97706; border: 1px solid #fef3c7; }
+    .btn-catalog-reserve:hover { background: #fef3c7; }
+    .btn-catalog-read { background: #f0f4ff; color: #3b6ef6; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+    .btn-catalog-read:hover { background: #e0ebff; }
+
+    /* ── PDF MODAL READER ── */
+    .modal-pdf {
+      position: fixed; inset: 0; background: rgba(30,35,64,0.6); z-index: 100;
+      backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center;
+      padding: 16px;
+    }
+    .modal-pdf.active { display: flex; }
+    .pdf-container {
+      background: var(--white); width: 100%; max-width: 600px; border-radius: 24px;
+      box-shadow: 0 20px 48px rgba(0,0,0,0.3); display: flex; flex-direction: column;
+      overflow: hidden; max-height: 90vh; animation: zoomIn 0.2s ease;
+    }
+    @keyframes zoomIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .pdf-header {
+      padding: 16px 20px; border-bottom: 1.5px solid #f0f4ff; display: flex;
+      justify-content: space-between; align-items: center; background: #f8fafd;
+    }
+    .pdf-title-text { font-weight: 900; font-size: 16px; color: #1e2340; }
+    .btn-close-pdf {
+      background: none; border: none; cursor: pointer; color: #9099c0; transition: color 0.15s;
+    }
+    .btn-close-pdf:hover { color: #e11d48; }
+
+    .pdf-body {
+      padding: 28px 24px; overflow-y: auto; flex: 1; background: #f0f4ff;
+      display: flex; justify-content: center;
+    }
+    .pdf-page-sheet {
+      background: var(--white); width: 100%; max-width: 480px; min-height: 400px;
+      box-shadow: 0 4px 20px rgba(80,100,180,0.08); border-radius: 12px;
+      padding: 40px 32px; position: relative; display: flex; flex-direction: column;
+    }
+    .pdf-page-num {
+      position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
+      font-size: 11px; font-weight: 800; color: #9099c0;
+    }
+    .pdf-content-classic {
+      font-family: Georgia, serif; line-height: 1.6; color: #2d3748; font-size: 15px;
+      white-space: pre-wrap;
+    }
+    .pdf-content-textbook {
+      line-height: 1.5; color: #1e2340; font-size: 14px;
+    }
+    .pdf-content-textbook h3 { font-size: 18px; margin-bottom: 12px; color: #3b6ef6; font-weight: 800; }
+    .pdf-content-textbook p { margin-bottom: 12px; }
+    .pdf-content-textbook ul { margin-left: 20px; margin-bottom: 12px; }
+    .pdf-content-textbook li { margin-bottom: 6px; }
+
+    .pdf-footer {
+      padding: 14px 20px; border-top: 1.5px solid #f0f4ff; display: flex;
+      justify-content: space-between; align-items: center; background: #f8fafd;
+    }
+    .pdf-nav-btn {
+      border: none; background: var(--white); border-radius: 8px; padding: 6px 12px;
+      font-size: 12px; font-weight: 800; cursor: pointer; color: #4a5280;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05); transition: background 0.1s;
+      font-family: 'Nunito', sans-serif;
+    }
+    .pdf-nav-btn:hover { background: #f0f4ff; }
+
     /* ── HIDDEN ── */
     .hidden { display: none !important; }
+
+    /* ── PRINT MEDIA STYLE ── */
+    @media print {
+      body { background: white !important; color: black !important; }
+      header, .back-row, .stats-row, .search-wrap, button, .role-selector, .action-row, .badge-lock {
+        display: none !important;
+      }
+      main { padding: 0 !important; }
+      .screen { display: none !important; }
+      #screen-reports { display: block !important; }
+      .debtor-class-card { box-shadow: none !important; border: 1.5px solid #ccc !important; page-break-inside: avoid; }
+      table { border-collapse: collapse !important; }
+      th, td { border: 1.5px solid #ccc !important; padding: 6px !important; }
+    }
   </style>
 </head>
 <body>
 
 <header>
   <div class="header-inner">
-    <div class="logo" onclick="goHome()">
-      <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
-        <path stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
-              d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5V5a2.5 2.5 0 0 1 2.5-2.5H20v15"/>
-      </svg>
+    <div class="header-left">
+      <div class="logo" onclick="goHome()">
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
+          <path stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+                d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5V5a2.5 2.5 0 0 1 2.5-2.5H20v15"/>
+        </svg>
+      </div>
+      <div class="header-text">
+        <div class="header-title">Школьная библиотека</div>
+        <div class="breadcrumb" id="breadcrumb">Все классы</div>
+      </div>
     </div>
-    <div class="header-text">
-      <div class="header-title">Школьная библиотека</div>
-      <div class="breadcrumb" id="breadcrumb">Все классы</div>
+
+    <!-- Переключатель Ролей -->
+    <div class="role-selector" id="role-selector">
+      <button class="btn-role active" id="role-lib" onclick="setRole('librarian')">👨‍🏫 Библиотека</button>
+      <button class="btn-role" id="role-stud" onclick="setRole('student')">🎒 Ученик</button>
     </div>
   </div>
 </header>
@@ -247,9 +499,23 @@
 <main>
 
   <!-- ════════════════════════
-       ЭКРАН 1 — КЛАССЫ
+       ЭКРАН 1 — КЛАССЫ (БИБЛИОТЕКАРЬ)
   ════════════════════════ -->
   <div id="screen-grades" class="screen active">
+    <!-- Ссылка на Сводный отчет по долгам -->
+    <div class="report-shortcut-card" onclick="openReportsScreen()">
+      <div class="report-shortcut-left">
+        <div class="report-shortcut-icon">📊</div>
+        <div>
+          <div class="report-shortcut-title">Должники и задолженности</div>
+          <div class="report-shortcut-sub" id="debtors-shortcut-sub">Сводный отчет по всем классам</div>
+        </div>
+      </div>
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" style="color: #b8bfd8;">
+        <path stroke="currentColor" stroke-width="2.5" stroke-linecap="round" d="m9 18 6-6-6-6"/>
+      </svg>
+    </div>
+
     <div class="page-title">Выберите класс</div>
     <div class="page-sub">Учёт школьных учебников</div>
     <div class="grades-grid" id="grades-grid"></div>
@@ -319,7 +585,209 @@
     </div>
   </div>
 
+  <!-- ════════════════════════
+       ЭКРАН 4 — СВОДНЫЙ ОТЧЕТ ПО ДОЛЖНИКАМ
+  ════════════════════════ -->
+  <div id="screen-reports" class="screen">
+    <div class="back-row">
+      <button class="btn-back" onclick="goHome()">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-width="2.5" stroke-linecap="round" d="M19 12H5m0 0 7 7M5 12l7-7"/>
+        </svg>
+        Назад
+      </button>
+      <div class="screen-head">
+        <h2>Отчет по должникам</h2>
+        <p>Генерация задолженностей школы</p>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <span class="stat-pill" id="report-total-debtors">Должников: 0</span>
+      <span class="stat-pill" id="report-total-books">Книг утеряно: 0</span>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-action btn-action-primary" onclick="window.print()">
+        🖨️ Печать PDF списка
+      </button>
+      <button class="btn-action" onclick="exportToExcel()">
+        📥 Экспорт в Excel (CSV)
+      </button>
+    </div>
+
+    <div id="reports-container"></div>
+  </div>
+
+  <!-- ════════════════════════
+       ЭКРАН 5 — АВТОРИЗАЦИЯ УЧЕНИКА
+  ════════════════════════ -->
+  <div id="screen-student-auth" class="screen">
+    <div class="portal-container">
+      <div class="auth-card">
+        <div class="tabs-auth">
+          <button class="tab-auth active" id="tab-login" onclick="setAuthTab('login')">Вход</button>
+          <button class="tab-auth" id="tab-register" onclick="setAuthTab('register')">Регистрация</button>
+        </div>
+
+        <!-- Форма Входа -->
+        <div id="auth-login-form">
+          <div class="form-group">
+            <label class="form-label">Выберите класс</label>
+            <select class="form-select" id="login-class-select"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ФИО Ученика</label>
+            <input class="form-input" id="login-name-input" type="text" placeholder="Введите имя..." />
+          </div>
+          <button class="btn-submit" onclick="handleStudentLogin()">Войти в кабинет</button>
+        </div>
+
+        <!-- Форма Регистрации -->
+        <div id="auth-register-form" class="hidden">
+          <div class="form-group">
+            <label class="form-label">Класс параллели</label>
+            <select class="form-select" id="reg-class-select">
+              <option value="7А">7А класс</option>
+              <option value="7Б">7Б класс</option>
+              <option value="8А">8А класс</option>
+              <option value="8Б">8Б класс</option>
+              <option value="9А">9А класс</option>
+              <option value="9Б">9Б класс</option>
+              <option value="10А">10А класс</option>
+              <option value="10Б">10Б класс</option>
+              <option value="11А">11А класс</option>
+              <option value="11Б">11Б класс</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Полное ФИО</label>
+            <input class="form-input" id="reg-name-input" type="text" placeholder="Иван Иванов" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Дизайн читательского билета</label>
+            <div class="theme-picker" id="theme-picker">
+              <div class="theme-btn space-blue active" onclick="selectCardTheme('space-blue', this)"></div>
+              <div class="theme-btn emerald-mint" onclick="selectCardTheme('emerald-mint', this)"></div>
+              <div class="theme-btn sunset-orange" onclick="selectCardTheme('sunset-orange', this)"></div>
+              <div class="theme-btn neon-purple" onclick="selectCardTheme('neon-purple', this)"></div>
+            </div>
+          </div>
+          <button class="btn-submit" onclick="handleStudentRegister()">Создать читательский билет</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════
+       ЭКРАН 6 — ЛИЧНЫЙ КАБИНЕТ УЧЕНИКА
+  ════════════════════════ -->
+  <div id="screen-student-portal" class="screen">
+    <div class="back-row">
+      <div></div>
+      <button class="btn-back" onclick="logoutStudent()">Выйти ➔</button>
+    </div>
+
+    <!-- Цифровой Читательский Билет -->
+    <div class="library-card space-blue" id="student-digital-card">
+      <div class="card-glow"></div>
+      <div class="card-header">
+        <span class="card-logo">📖 SMARTLIB</span>
+        <span class="card-type">ЧИТАТЕЛЬСКИЙ БИЛЕТ</span>
+      </div>
+      <div class="card-body">
+        <div class="card-name" id="portal-card-name">Загрузка...</div>
+        <div class="card-class" id="portal-card-class">Класс: --</div>
+      </div>
+      <div class="card-footer">
+        <div class="card-barcode">
+          <svg width="140" height="28" viewBox="0 0 100 20">
+            <rect x="0" width="2" height="20" fill="currentColor"/>
+            <rect x="3" width="1" height="20" fill="currentColor"/>
+            <rect x="6" width="3" height="20" fill="currentColor"/>
+            <rect x="11" width="1" height="20" fill="currentColor"/>
+            <rect x="14" width="2" height="20" fill="currentColor"/>
+            <rect x="18" width="4" height="20" fill="currentColor"/>
+            <rect x="23" width="1" height="20" fill="currentColor"/>
+            <rect x="26" width="2" height="20" fill="currentColor"/>
+            <rect x="30" width="3" height="20" fill="currentColor"/>
+            <rect x="35" width="1" height="20" fill="currentColor"/>
+            <rect x="38" width="2" height="20" fill="currentColor"/>
+            <rect x="42" width="4" height="20" fill="currentColor"/>
+            <rect x="48" width="1" height="20" fill="currentColor"/>
+            <rect x="51" width="2" height="20" fill="currentColor"/>
+            <rect x="55" width="3" height="20" fill="currentColor"/>
+            <rect x="60" width="1" height="20" fill="currentColor"/>
+            <rect x="63" width="2" height="20" fill="currentColor"/>
+            <rect x="67" width="4" height="20" fill="currentColor"/>
+            <rect x="73" width="1" height="20" fill="currentColor"/>
+            <rect x="76" width="2" height="20" fill="currentColor"/>
+            <rect x="80" width="3" height="20" fill="currentColor"/>
+            <rect x="85" width="1" height="20" fill="currentColor"/>
+            <rect x="88" width="2" height="20" fill="currentColor"/>
+            <rect x="92" width="6" height="20" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="card-id" id="portal-card-id">ID: 0000-000</div>
+      </div>
+    </div>
+
+    <!-- Мои книги -->
+    <div class="section-title">📦 Мои книги на руках</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Название книги</th>
+            <th>Инв. №</th>
+            <th style="text-align:right">Статус</th>
+          </tr>
+        </thead>
+        <tbody id="portal-books-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- Электронный каталог и бронь -->
+    <div class="section-title">🔍 Электронный каталог литературы</div>
+    <div class="search-wrap">
+      <svg class="search-icon" width="18" height="18" fill="none" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+        <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="m21 21-4.35-4.35"/>
+      </svg>
+      <input class="search-input" id="catalog-search" type="text" placeholder="Поиск книг по названию или автору..." oninput="filterCatalog()" />
+    </div>
+
+    <div class="catalog-list" id="catalog-list"></div>
+  </div>
+
 </main>
+
+<!-- ════════════════════════
+     ПРОДВИНУТЫЙ PDF-РИДЕР
+════════════════════════ -->
+<div class="modal-pdf" id="modal-pdf-reader" onclick="closePdfReader()">
+  <div class="pdf-container" onclick="event.stopPropagation()">
+    <div class="pdf-header">
+      <span class="pdf-title-text" id="pdf-title">Книга</span>
+      <button class="btn-close-pdf" onclick="closePdfReader()">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-width="2.5" stroke-linecap="round" d="M18 6 6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div class="pdf-body">
+      <div class="pdf-page-sheet">
+        <div id="pdf-content-area"></div>
+        <div class="pdf-page-num" id="pdf-page-number">Страница 1</div>
+      </div>
+    </div>
+    <div class="pdf-footer">
+      <button class="pdf-nav-btn" onclick="pdfChangePage(-1)">◀ Пред. страница</button>
+      <button class="pdf-nav-btn" onclick="pdfChangePage(1)">След. страница ▶</button>
+    </div>
+  </div>
+</div>
 
 <script>
 // ─────────────────────────────────────────────
@@ -332,7 +800,7 @@ const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ─────────────────────────────────────────────
-//  ЛОКАЛЬНЫЙ РЕЗЕРВНЫЙ МАССИВ ДАННЫХ (Для 7, 8, 9, 10, 11 классов - А и Б)
+//  ЛОКАЛЬНЫЙ РЕЗЕРВНЫЙ МАССИВ ДАННЫХ
 // ─────────────────────────────────────────────
 const FALLBACK_MOCK_DATA = [
   // 7А класс
@@ -414,7 +882,7 @@ const FALLBACK_MOCK_DATA = [
   { student_class:'9Б', student_name:'Оспанов Дамир',    book_title:'История',         book_number:'ИС-392', status:'ok' },
   { student_class:'9Б', student_name:'Асылбекова Аружан',book_title:'История',         book_number:'ИС-393', status:'lost' },
 
-  // 10Б класс (Резервный)
+  // 10Б класс
   { student_class:'10Б', student_name:'Болатов Арсен',    book_title:'География',       book_number:'ГГ-101', status:'ok' },
   { student_class:'10Б', student_name:'Кусаинова Диана',  book_title:'География',       book_number:'ГГ-102', status:'ok' },
   { student_class:'10Б', student_name:'Сулейменов Темирлан', book_title:'География',     book_number:'ГГ-103', status:'lost' },
@@ -448,6 +916,55 @@ const FALLBACK_MOCK_DATA = [
   { student_class:'11Б', student_name:'Калиев Азамат',   book_title:'История',         book_number:'ИС-153', status:'lost' },
 ];
 
+// ─────────────────────────────────────────────
+//  БАЗА ХУДОЖЕСТВЕННОЙ И УЧЕБНОЙ ЛИТЕРАТУРЫ
+// ─────────────────────────────────────────────
+const CATALOG_DATABASE = [
+  { id: 'c1', title: 'Абай жолы', author: 'Мухтар Ауэзов', type: 'classic', copies_total: 15, copies_free: 6, icon: '📜' },
+  { id: 'c2', title: 'Көшпенділер', author: 'Ильяс Есенберлин', type: 'classic', copies_total: 10, copies_free: 3, icon: '⚔️' },
+  { id: 'c3', title: 'Абайдың қара сөздері', author: 'Абай Кунанбаев', type: 'classic', copies_total: 8, copies_free: 8, icon: '🖋️' },
+  { id: 'c4', title: 'Ботагоз', author: 'Сабит Муканов', type: 'classic', copies_total: 6, copies_free: 0, icon: '🌸' },
+  { id: 't1', title: 'Алгебра 9 класс', author: 'А. Шыныбеков', type: 'textbook', copies_total: 35, copies_free: 30, icon: '📐' },
+  { id: 't2', title: 'История Казахстана 9 класс', author: 'С. Жолдасбаев', type: 'textbook', copies_total: 40, copies_free: 38, icon: '📜' },
+  { id: 't3', title: 'Физика 8 класс', author: 'Р. Башарулы', type: 'textbook', copies_total: 30, copies_free: 12, icon: '⚡' },
+  { id: 't4', title: 'Химия 8 класс', author: 'М. Усмангалиева', type: 'textbook', copies_total: 32, copies_free: 28, icon: '🧪' },
+];
+
+// Тексты для электронного PDF-ридера (Симуляция)
+const PDF_CONTENT_SIMULATION = {
+  'Абай жолы': [
+    "ГЛАВА ПЕРВАЯ: В ПУТИ (ҚАЙТҚАНДА)\n\nЖаяу жалпының бәрі де артта қалды. Аттылар да аяңдап, үйір-үйір болып келеді.\n\nЮный Абай возвращается домой после многолетней учебы в медресе Семипалатинска. Степной ветер обдувает его лицо. Он полон надежд и размышлений о будущем своего народа, о поэзии, о величии степного духа и тяжелой доле бедняков. Впереди его ждут великие совершения, радости и глубокие разочарования...",
+    "Абай есейген сайын дала өмірінің қатпар-қатпар сырларына терең бойлай берді. Әкесі Құнанбайдың қатал шешімдері мен әділетсіздігі жас жүректі жаралайды. Ол анасы Ұлжан мен әжесі Зеренің мейірімді ертегілері мен жырларынан жұбаныш табады. Бұл махаббат оны ұлы ақындық жолға жетелейді."
+  ],
+  'Көшпенділер': [
+    "ИЛЬЯС ЕСЕНБЕРЛИН — КОЧЕВНИКИ (ТРИЛОГИЯ)\n\nЧасть первая: Заговор.\n\nВ бескрайних степях Дешт-и-Кипчака решается судьба будущих поколений. Султаны Керей и Жанибек ведут кочевников на юго-восток, прочь от гнета хана Абулхаира. Это великое переселение заложит основу могучего Казахского ханства. Костры кочевников горят в темноте ночи, а воины точат свои сабли перед завтрашней дорогой...",
+    "Казахская государственность рождалась в пламени сражений и мудрости великих биев. Касым-хан, Абылай-хан, Кенесары... Их имена высечены на золотых страницах истории. Степи помнят топот копыт их верных скакунов и песни славных жырау, воспевавших свободу и единство народа."
+  ],
+  'Абайдың қара сөздері': [
+    "СЛОВО ПЕРВОЕ (БІРІНШІ СӨЗ)\n\nХорошо ли я жил, плохо ли, а пройден немалый путь. Всего было вдоволь в этой жизни: и споров, и борьбы, и досадных упущений. Но теперь, когда пройден рубеж, я вижу, что силы мои на исходе, и на душе осталась лишь усталость. Для чего же я жил? Каков плод моих трудов?\n\nРешил я наконец: займусь-ка я писанием, буду записывать свои мысли. Пусть это будут слова назидания...",
+    "СЛОВО ВТОРОЕ (ЕКІНШІ СӨЗ)\n\nВ детстве мне приходилось слышать, как казахи смеялись над другими народами, считая себя самыми лучшими. Но теперь я вижу: другие народы строят города, постигают науки, шьют одежду, развивают ремесла. Нам нужно учиться, стремиться к знаниям и искоренять лень, чтобы занять достойное место под солнцем."
+  ],
+  'Ботагоз': [
+    "САБИТ МУКАНОВ — БОТАГОЗ\n\nРоман рассказывает о судьбе молодой казахской девушки Ботагоз в суровые годы начала XX века. Она сталкивается со старыми степными предрассудками, байским угнетением и несправедливостью. Но сильный характер Ботагоз, ее стремление к свободе и знаниям ведут ее вперед сквозь бури революционных перемен и борьбы за права женщин...",
+    "Асқар мен Ботагөздің махаббаты қиын-қистау кезеңнің сынағынан өтеді. Даланың ақын жаны, жас революционер Асқар халықты оятуға тырысады. Олардың ортақ мақсаты — қазақ даласына жаңа өмір, теңдік пен білім нұрын орнату."
+  ],
+  'Алгебра 9 класс': [
+    "ГЛАВА 3. КВАДРАТНЫЕ УРАВНЕНИЯ И НЕРАВЕНСТВА\n\nТеорема Виета:\nЕсли x1 и x2 — корни квадратного уравнения ax² + bx + c = 0, то:\nx1 + x2 = -b / a\nx1 * x2 = c / a\n\nПример решения неравенства:\nx² - 5x + 6 > 0\nРазложим на множители: (x - 2)(x - 3) > 0\nМетодом интервалов получаем решение: x ∈ (-∞; 2) ∪ (3; +∞).",
+    "ГЛАВА 4. ЧИСЛОВЫЕ ПОСЛЕДОВАТЕЛЬНОСТИ\n\nАрифметическая прогрессия:\na_n = a_1 + d * (n - 1)\nСумма первых n членов:\nS_n = ((a_1 + a_n) * n) / 2\n\nГеометрическая прогрессия:\nb_n = b_1 * q^(n - 1)\nСумма первых n членов при q ≠ 1:\nS_n = (b_1 * (q^n - 1)) / (q - 1)"
+  ],
+  'История Казахстана 9 класс': [
+    "РАЗДЕЛ I. ОБРАЗОВАНИЕ КАЗАХСКОГО ХАНСТВА (1465 г.)\n\nОснователи: Султаны Керей и Жанибек.\nПричины образования: распад Государства кочевых узбеков (ханства Абулхаира) и Могулистана, стремление казахских племен к объединению и независимости.\nТерритория первоначального расселения: долины рек Чу и Талас.\nИсторическое значение: завершился длительный процесс формирования казахской народности и государственности.",
+    "РАЗДЕЛ II. КАЗАХСКОЕ ХАНСТВО ПРИ ХАНЕ АБЫЛАЕ (1771–1781 гг.)\n\nАбылай-хан — выдающийся государственный деятель, объединивший все три жуза. Проводил гибкую внешнюю политику балансирования между Российской и Цинской империями. В годы «Великого бедствия» (Ақтабан шұбырынды) возглавил освободительную борьбу народа против джунгарских завоевателей."
+  ],
+  'Физика 8 класс': [
+    "РАЗДЕЛ 2. ТЕПЛОВЫЕ ЯВЛЕНИЯ И ЗАКОНЫ ТЕРМОДИНАМИКИ\n\nКоличество теплоты при нагревании:\nQ = c * m * (t2 - t1)\nгде c — удельная теплоемкость вещества, m — масса, t1 и t2 — начальная и конечная температуры.\n\nКоличество теплоты при сгорании топлива:\nQ = q * m\nгде q — удельная теплота сгорания топлива.",
+    "РАЗДЕЛ 3. ЭЛЕКТРИЧЕСКИЕ ЯВЛЕНИЯ\n\nЗакон Ома для участка цепи:\nI = U / R\nгде I — сила тока (Амперы), U — напряжение (Вольты), R — электрическое сопротивление (Омы).\n\nЗакон Джоуля-Ленца:\nQ = I² * R * t\nОпределяет количество теплоты, выделяемое проводником с током."
+  ],
+  'Химия 8 класс': [
+    "ТЕМА 4. КЛАССЫ НЕОРГАНИЧЕСКИХ ВЕЩЕСТВ\n\n1. Оксиды (основные, кислотные, амфотерные):\nНапример: CO₂, CaO, Al₂O₃.\n\n2. Основания (щелочи и нерастворимые):\nНапример: NaOH, Ca(OH)₂, Cu(OH)₂.\n\n3. Кислоты:\nНапример: HCl (соляная), H₂SO₄ (серная), HNO₃ (азотная).\n\n4. Соли:\nНапример: NaCl (хлорид натрия), CuSO₄ (сульфат меди)."
+  ]
+};
+
 // Иконки предметов
 const SUBJECT_ICONS = {
   'Казахский язык': '🇰🇿',
@@ -474,12 +991,22 @@ const GRADE_STYLES = {
   '11': { bg: '#fff1f2', num: '#be123c', label: '#f43f5e' },
 };
 
-// Глобальный массив данных
+// Глобальные переменные состояния
 let allBooksData = [];
+let localReservations = []; // Бронирования из Supabase
 
 let currentGrade = null;
 let currentSubject = null;
 let currentStudentsData = [];
+let currentRole = 'librarian'; // 'librarian' | 'student'
+
+// Переменные ученика
+let loggedInStudent = null; // { name, class, theme, id }
+let regSelectedTheme = 'space-blue';
+
+// Состояние PDF ридера
+let currentPdfBook = '';
+let currentPdfPage = 0;
 
 // ─────────────────────────────────────────────
 //  ИНТЕЛЛЕКТУАЛЬНАЯ НОРМАЛИЗАЦИЯ ИМЕНИ КЛАССА
@@ -487,68 +1014,521 @@ let currentStudentsData = [];
 function normalizeClassName(name) {
   if (!name) return '';
   let str = name.trim();
-  
-  // Если это ровно "10 класс" или "10", маппим в "10А" для совместимости
-  if (str === '10 класс' || str === '10') {
-    return '10А';
-  }
-  
-  // Вырезаем цифру и букву параллели (например, "10 Б класс" -> "10Б", "10 А" -> "10А")
+  if (str === '10 класс' || str === '10') return '10А';
   const match = str.match(/^(\d+)\s*([А-Яа-яA-Za-z]?)/);
   if (match) {
     const num = match[1];
     const letter = match[2].toUpperCase();
-    if (letter) {
-      return num + letter;
-    }
-    return num + 'А';
+    return letter ? num + letter : num + 'А';
   }
-  
   return str;
 }
 
 // ─── ЗАГРУЗКА ДАННЫХ ────────────────────────────────
 async function loadAllData() {
   try {
-    // 1. Получаем все имеющиеся данные из Supabase
     const { data: dbData, error } = await db
       .from('library_books')
       .select('student_class, student_name, book_title, book_number, status');
 
     if (error) throw error;
-
     const dbRecords = dbData || [];
 
-    // Нормализуем Supabase записи (например, "10 класс" -> "10А", "10 Б" -> "10Б")
-    const normalizedDbRecords = dbRecords.map(r => {
-      return { ...r, student_class: normalizeClassName(r.student_class) };
+    // Разделяем обычные записи от бронирований
+    const normalizedDbRecords = [];
+    localReservations = [];
+
+    dbRecords.forEach(r => {
+      const normClass = normalizeClassName(r.student_class);
+      const record = { ...r, student_class: normClass };
+      if (r.status === 'reserved') {
+        localReservations.push(record);
+      } else {
+        normalizedDbRecords.push(record);
+      }
     });
 
-    // 2. Определяем, какие классы УЖЕ есть в базе Supabase
     const dbGrades = new Set();
     normalizedDbRecords.forEach(r => {
-      const className = r.student_class;
-      if (className) dbGrades.add(className);
+      if (r.student_class) dbGrades.add(r.student_class);
     });
 
-    // 3. Отбираем локальные данные только для тех классов, которых НЕТ в базе Supabase
     const normalizedMockData = FALLBACK_MOCK_DATA.map(r => {
       return { ...r, student_class: normalizeClassName(r.student_class) };
     });
 
     const fallbackRecords = normalizedMockData.filter(r => {
-      const className = r.student_class;
-      return className && !dbGrades.has(className);
+      return r.student_class && !dbGrades.has(r.student_class);
     });
 
-    // 4. Объединяем полученные из БД записи с резервными для недостающих классов
     allBooksData = [...normalizedDbRecords, ...fallbackRecords];
   } catch (err) {
-    console.warn("Не удалось загрузить данные из Supabase. Используется локальный массив:", err);
+    console.warn("Ошибка загрузки Supabase. Используем локальные данные:", err);
     allBooksData = FALLBACK_MOCK_DATA.map(r => {
       return { ...r, student_class: normalizeClassName(r.student_class) };
     });
   }
+
+  // Обновим количество должников на кнопке на главном экране
+  updateDebtorsShortcutBadge();
+}
+
+function updateDebtorsShortcutBadge() {
+  const lostCount = allBooksData.filter(r => r.status === 'lost').length;
+  const badgeEl = document.getElementById('debtors-shortcut-sub');
+  if (badgeEl) {
+    badgeEl.textContent = lostCount > 0 
+      ? `Найдено ${lostCount} долгов по книгам`
+      : `Все книги сданы вовремя!`;
+  }
+}
+
+// ─── ОПРЕДЕЛЕНИЕ РОЛИ И НАВИГАЦИЯ ─────────────────
+function setRole(role) {
+  currentRole = role;
+  document.getElementById('role-lib').classList.toggle('active', role === 'librarian');
+  document.getElementById('role-stud').classList.toggle('active', role === 'student');
+
+  if (role === 'librarian') {
+    goHome();
+  } else {
+    // Кабинет Ученика
+    const saved = localStorage.getItem('smartlib_student');
+    if (saved) {
+      loggedInStudent = JSON.parse(saved);
+      openStudentPortal();
+    } else {
+      showScreen('student-auth');
+      initAuthClassDropdowns();
+      setAuthTab('login');
+      setBreadcrumb('Кабинет ученика ➔ Вход');
+    }
+  }
+}
+
+// ─── АВТОРИЗАЦИЯ И РЕГИСТРАЦИЯ УЧЕНИКА ───────────
+function setAuthTab(tab) {
+  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+  document.getElementById('auth-login-form').classList.toggle('hidden', tab !== 'login');
+  document.getElementById('auth-register-form').classList.toggle('hidden', tab !== 'register');
+}
+
+function initAuthClassDropdowns() {
+  const classes = [...new Set(allBooksData.map(r => r.student_class))].sort();
+  const select = document.getElementById('login-class-select');
+  select.innerHTML = '';
+  classes.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = `${c} класс`;
+    select.appendChild(opt);
+  });
+}
+
+function selectCardTheme(theme, element) {
+  regSelectedTheme = theme;
+  document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
+  element.classList.add('active');
+}
+
+function handleStudentRegister() {
+  const nameInput = document.getElementById('reg-name-input').value.trim();
+  const classSelect = document.getElementById('reg-class-select').value;
+  if (!nameInput) {
+    alert("Пожалуйста, введите ваше полное имя!");
+    return;
+  }
+
+  loggedInStudent = {
+    name: nameInput,
+    class: classSelect,
+    theme: regSelectedTheme,
+    id: 'LIB-' + Math.floor(1000 + Math.random()*9000)
+  };
+
+  localStorage.setItem('smartlib_student', JSON.stringify(loggedInStudent));
+  openStudentPortal();
+}
+
+function handleStudentLogin() {
+  const selectedClass = document.getElementById('login-class-select').value;
+  const nameInput = document.getElementById('login-name-input').value.trim();
+
+  if (!nameInput) {
+    alert("Пожалуйста, введите имя!");
+    return;
+  }
+
+  loggedInStudent = {
+    name: nameInput,
+    class: selectedClass,
+    theme: 'space-blue',
+    id: 'LIB-' + Math.floor(1000 + Math.random()*9000)
+  };
+
+  localStorage.setItem('smartlib_student', JSON.stringify(loggedInStudent));
+  openStudentPortal();
+}
+
+function logoutStudent() {
+  localStorage.removeItem('smartlib_student');
+  loggedInStudent = null;
+  setRole('student');
+}
+
+// ─── ЛИЧНЫЙ КАБИНЕТ УЧЕНИКА ─────────────────────
+async function openStudentPortal() {
+  showScreen('student-portal');
+  setBreadcrumb(`Кабинет: ${loggedInStudent.name}`);
+
+  // Рендерим цифровой читательский билет
+  document.getElementById('portal-card-name').textContent = loggedInStudent.name;
+  document.getElementById('portal-card-class').textContent = `Класс: ${loggedInStudent.class}`;
+  document.getElementById('portal-card-id').textContent = `ID: ${loggedInStudent.id}`;
+  
+  const cardDiv = document.getElementById('student-digital-card');
+  cardDiv.className = `library-card ${loggedInStudent.theme || 'space-blue'}`;
+
+  // Выводим книги на руках
+  renderStudentPortalBooks();
+
+  // Выводим каталог художественной литературы
+  renderCatalog();
+}
+
+function renderStudentPortalBooks() {
+  const tbody = document.getElementById('portal-books-tbody');
+  tbody.innerHTML = '';
+
+  const myBooks = allBooksData.filter(r => 
+    r.student_name.toLowerCase().includes(loggedInStudent.name.toLowerCase()) && 
+    r.student_class === loggedInStudent.class
+  );
+
+  if (myBooks.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="3" class="empty">На руках нет выданных книг</td></tr>`;
+    return;
+  }
+
+  myBooks.forEach(row => {
+    const isLost = row.status === 'lost';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        <div style="font-weight: 800; color: #1e2340; display:flex; align-items:center; gap:8px;">
+          ${row.book_title}
+          <button class="btn-catalog btn-catalog-read" style="padding:4px 8px; font-size:10px; border-radius:6px;" onclick="openPdfReader('${row.book_title}')">📖 Читать PDF</button>
+        </div>
+      </td>
+      <td><span class="book-num">${row.book_number}</span></td>
+      <td>
+        ${isLost
+          ? `<span class="badge badge-lost">Утеряна (Заблокирован)</span>`
+          : `<span class="badge badge-ok">Сдать до 25 мая</span>`
+        }
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ─── ЭЛЕКТРОННЫЙ КАТАЛОГ И БРОНИРОВАНИЕ ────────
+function renderCatalog() {
+  const container = document.getElementById('catalog-list');
+  container.innerHTML = '';
+
+  const q = document.getElementById('catalog-search')?.value.toLowerCase() || '';
+
+  const filtered = CATALOG_DATABASE.filter(b => 
+    b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q)
+  );
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="empty">Книги по вашему запросу не найдены</div>`;
+    return;
+  }
+
+  filtered.forEach(book => {
+    const currentlyOut = allBooksData.filter(r => r.book_title.trim() === book.title.trim()).length;
+    const reservedCount = localReservations.filter(r => r.book_title.trim() === book.title.trim()).length;
+    
+    const free = Math.max(0, book.copies_total - currentlyOut - reservedCount);
+
+    const card = document.createElement('div');
+    card.className = 'catalog-card';
+
+    const hasFree = free > 0;
+    const isReservedByMe = localReservations.some(r => 
+      r.book_title.trim() === book.title.trim() && 
+      r.student_name.toLowerCase() === loggedInStudent.name.toLowerCase()
+    );
+
+    let rightSection = '';
+    if (isReservedByMe) {
+      rightSection = `<span class="badge badge-warn">✓ Забронировано вами</span>`;
+    } else if (hasFree) {
+      rightSection = `
+        <button class="btn-catalog btn-catalog-borrow" onclick="borrowCatalogBook('${book.title}')">Взять книгу</button>
+      `;
+    } else {
+      rightSection = `
+        <button class="btn-catalog btn-catalog-reserve" onclick="reserveCatalogBook('${book.title}')">Забронировать</button>
+      `;
+    }
+
+    const pdfBtn = `<button class="btn-catalog btn-catalog-read" onclick="openPdfReader('${book.title}')">📖 Читать PDF</button>`;
+
+    card.innerHTML = `
+      <div class="catalog-left">
+        <div class="catalog-cover">${book.icon}</div>
+        <div class="catalog-info">
+          <div class="catalog-title">${book.title}</div>
+          <div class="catalog-author">${book.author}</div>
+          <div class="catalog-copies">Всего: ${book.copies_total} | Свободно: ${free}</div>
+        </div>
+      </div>
+      <div class="catalog-right">
+        ${pdfBtn}
+        ${rightSection}
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function filterCatalog() {
+  renderCatalog();
+}
+
+async function borrowCatalogBook(title) {
+  if (!loggedInStudent) return;
+  
+  const randNum = 'ЭЛ-' + Math.floor(100 + Math.random()*900);
+  
+  try {
+    const { error } = await db.from('library_books').insert([
+      {
+        student_class: loggedInStudent.class,
+        student_name: loggedInStudent.name,
+        book_title: title,
+        book_number: randNum,
+        status: 'ok'
+      }
+    ]);
+    if (error) throw error;
+    alert(`Книга "${title}" успешно выписана на ваш формуляр! Инвентарный номер: ${randNum}`);
+    await loadAllData();
+    openStudentPortal();
+  } catch (err) {
+    alert("Не удалось записать книгу в Supabase: " + err.message);
+  }
+}
+
+async function reserveCatalogBook(title) {
+  if (!loggedInStudent) return;
+
+  try {
+    const { error } = await db.from('library_books').insert([
+      {
+        student_class: loggedInStudent.class,
+        student_name: loggedInStudent.name,
+        book_title: title,
+        book_number: 'БР-' + Math.floor(100 + Math.random()*900),
+        status: 'reserved'
+      }
+    ]);
+    if (error) throw error;
+    alert(`Книга "${title}" успешно забронирована на ваше имя! Когда она освободится, библиотекарь отложит её для вас.`);
+    await loadAllData();
+    openStudentPortal();
+  } catch (err) {
+    alert("Не удалось забронировать книгу в Supabase: " + err.message);
+  }
+}
+
+// ─── ИНТЕРАКТИВНЫЙ PDF-РИДЕР ────────────────────
+function openPdfReader(bookTitle) {
+  currentPdfBook = bookTitle;
+  currentPdfPage = 0;
+  
+  const pages = PDF_CONTENT_SIMULATION[bookTitle] || [
+    "📖 ЭЛЕКТРОННАЯ ВЕРСИЯ УЧЕБНИКА\n\nРаздел находится на стадии оцифровки в рамках программы цифровизации школьной библиотеки. В скором времени здесь появится полный текст данного учебника в высоком качестве.",
+    "Вы можете использовать бумажную версию книги или обратиться к библиотекарю за получением кода доступа к электронной образовательной платформе."
+  ];
+
+  document.getElementById('pdf-title').textContent = bookTitle;
+  document.getElementById('modal-pdf-reader').classList.add('active');
+
+  renderPdfPage(pages);
+}
+
+function renderPdfPage(pages) {
+  const contentArea = document.getElementById('pdf-content-area');
+  const pageText = pages[currentPdfPage];
+
+  const isClassic = ['Абай жолы', 'Көшпенділер', 'Абайдың қара сөздері', 'Ботагоз'].includes(currentPdfBook);
+
+  if (isClassic) {
+    contentArea.className = 'pdf-content-classic';
+    contentArea.textContent = pageText;
+  } else {
+    contentArea.className = 'pdf-content-textbook';
+    const lines = pageText.split('\n');
+    let html = '';
+    lines.forEach(line => {
+      if (line.startsWith('ГЛАВА') || line.startsWith('РАЗДЕЛ') || line.startsWith('ТЕМА')) {
+        html += `<h3>${line}</h3>`;
+      } else if (line.startsWith('-') || line.startsWith('*')) {
+        html += `<li>${line.substring(1).trim()}</li>`;
+      } else if (line.trim() !== '') {
+        html += `<p>${line}</p>`;
+      }
+    });
+    if (html.includes('<li>')) {
+      contentArea.innerHTML = `<ul>${html}</ul>`;
+    } else {
+      contentArea.innerHTML = html;
+    }
+  }
+
+  document.getElementById('pdf-page-number').textContent = `Страница ${currentPdfPage + 1} из ${pages.length}`;
+}
+
+function pdfChangePage(direction) {
+  const pages = PDF_CONTENT_SIMULATION[currentPdfBook] || [ "..." ];
+  const newPage = currentPdfPage + direction;
+  if (newPage >= 0 && newPage < pages.length) {
+    currentPdfPage = newPage;
+    renderPdfPage(pages);
+  }
+}
+
+function closePdfReader() {
+  document.getElementById('modal-pdf-reader').classList.remove('active');
+}
+
+// ─── СВОДНЫЙ ОТЧЕТ ПО ДОЛЖНИКАМ (БИБЛИОТЕКАРЬ) ───
+function openReportsScreen() {
+  showScreen('reports');
+  setBreadcrumb('Сводный отчет по должникам');
+
+  const container = document.getElementById('reports-container');
+  container.innerHTML = '';
+
+  const lostBooks = allBooksData.filter(r => r.status === 'lost');
+
+  const uniqueDebtors = new Set(lostBooks.map(r => r.student_name)).size;
+  document.getElementById('report-total-debtors').textContent = `Должников: ${uniqueDebtors} чел.`;
+  document.getElementById('report-total-books').textContent = `Книг утеряно: ${lostBooks.length} шт.`;
+
+  if (lostBooks.length === 0) {
+    container.innerHTML = `<div class="empty">🎉 В школе нет должников! Все книги сданы в целости и сохранности.</div>`;
+    return;
+  }
+
+  const classGroups = new Map();
+  lostBooks.forEach(r => {
+    if (!classGroups.has(r.student_class)) {
+      classGroups.set(r.student_class, []);
+    }
+    classGroups.get(r.student_class).push(r);
+  });
+
+  const sortedClasses = [...classGroups.keys()].sort((a, b) => {
+    const numA = parseInt(a.match(/^\d+/)?.[0] || '0', 10);
+    const numB = parseInt(b.match(/^\d+/)?.[0] || '0', 10);
+    if (numA !== numB) return numA - numB;
+    return a.localeCompare(b, 'ru');
+  });
+
+  sortedClasses.forEach(className => {
+    const debtors = classGroups.get(className);
+    const card = document.createElement('div');
+    card.className = 'debtor-class-card';
+
+    let tbodyRows = '';
+    debtors.forEach(r => {
+      tbodyRows += `
+        <tr>
+          <td>
+            <span class="student-name">
+              👤 ${r.student_name}
+              <span class="badge badge-lock" style="font-size:10px;padding:2px 6px;">🔒 Обходной заблокирован</span>
+            </span>
+          </td>
+          <td><span style="font-weight:700; color:#1e2340">${r.book_title}</span></td>
+          <td><span class="book-num">${r.book_number}</span></td>
+        </tr>
+      `;
+    });
+
+    card.innerHTML = `
+      <div class="debtor-class-head">
+        <span class="debtor-class-title">${className} класс</span>
+        <button class="btn-action" style="background:#f0f4ff; color:#3b6ef6; font-size:12px; padding:6px 12px;" onclick="shareClassDebtorsWhatsApp('${className}')">
+          💬 Отправить в чат WhatsApp
+        </button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Ученик</th>
+              <th>Книга</th>
+              <th>Инв. №</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tbodyRows}
+          </tbody>
+        </table>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function exportToExcel() {
+  const lostBooks = allBooksData.filter(r => r.status === 'lost');
+  if (lostBooks.length === 0) {
+    alert("Нет должников для экспорта.");
+    return;
+  }
+  
+  let csvContent = "\uFEFF"; 
+  csvContent += "Класс;ФИО Ученика;Название книги;Инвентарный №;Статус;Обходной лист\n";
+  
+  lostBooks.forEach(r => {
+    csvContent += `"${r.student_class}";"${r.student_name}";"${r.book_title}";"${r.book_number}";"Утеряна";"Заблокирован"\n`;
+  });
+  
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", `Должники_Библиотека_${new Date().getFullYear()}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function shareClassDebtorsWhatsApp(className) {
+  const classDebtors = allBooksData.filter(r => r.student_class === className && r.status === 'lost');
+  if (classDebtors.length === 0) {
+    alert(`В классе ${className} нет должников!`);
+    return;
+  }
+  
+  let message = `📚 *СПИСОК ДОЛЖНИКОВ (${className} КЛАСС):*\n\n`;
+  message += `Внимание родителей и учащихся! У следующих учеников имеются не сданные учебники. Обходной лист временно заблокирован:\n\n`;
+  classDebtors.forEach((r, idx) => {
+    message += `${idx + 1}. *${r.student_name}* ➔ "${r.book_title}" (Инв. №${r.book_number})\n`;
+  });
+  message += `\nПожалуйста, срочно сдайте книги в библиотеку школы!`;
+  
+  const encodedText = encodeURIComponent(message);
+  window.open(`https://wa.me/?text=${encodedText}`, '_blank');
 }
 
 // ─── ИНИЦИАЛИЗАЦИЯ ЭКРАНА КЛАССОВ ─────────────────
@@ -565,8 +1545,7 @@ async function init() {
     return;
   }
 
-  // Собираем уникальные классы (7А, 7Б, 8А...) и считаем количество учеников
-  const classMap = new Map(); // className -> Set(student_name)
+  const classMap = new Map();
   allBooksData.forEach(r => {
     const className = r.student_class;
     if (className) {
@@ -577,7 +1556,6 @@ async function init() {
     }
   });
 
-  // Логическая сортировка: сначала по цифре, потом по букве А/Б
   const sortedClasses = [...classMap.keys()].sort((a, b) => {
     const numA = parseInt(a.match(/^\d+/)?.[0] || '0', 10);
     const numB = parseInt(b.match(/^\d+/)?.[0] || '0', 10);
@@ -618,10 +1596,8 @@ function openGrade(grade) {
   const list = document.getElementById('subjects-list');
   list.innerHTML = '';
 
-  // Фильтруем данные по выбранному классу
   const classData = allBooksData.filter(r => r.student_class === grade);
 
-  // Группируем по предмету
   const subjectMap = new Map();
   classData.forEach(r => {
     const title = r.book_title?.trim();
@@ -676,7 +1652,6 @@ function openSubject(grade, subject) {
 
   document.getElementById('back-btn').onclick = () => openGrade(grade);
 
-  // Фильтруем по классу и названию книги, затем сортируем по алфавиту
   const filteredData = allBooksData.filter(r => {
     const matchesClass = r.student_class === grade;
     const matchesSubject = r.book_title?.trim() === subject;
@@ -705,9 +1680,20 @@ function renderStudentsTable(data) {
   tbody.innerHTML = '';
   data.forEach(row => {
     const isLost = row.status === 'lost';
+    
+    const studentHasAnyLostBook = allBooksData.some(r => 
+      r.student_name.toLowerCase() === row.student_name.toLowerCase() && 
+      r.status === 'lost'
+    );
+
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td><span class="student-name">${esc(row.student_name)}</span></td>
+      <td>
+        <span class="student-name">
+          👤 ${esc(row.student_name)}
+          ${studentHasAnyLostBook ? `<span class="badge badge-lock" style="font-size:10px;padding:2px 6px;">🔒 Обходной заблокирован</span>` : ''}
+        </span>
+      </td>
       <td><span class="book-num">${esc(row.book_number)}</span></td>
       <td>${isLost
         ? `<span class="badge badge-lost">Утеряна</span>`
