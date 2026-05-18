@@ -1013,10 +1013,6 @@ const CATALOG_DATABASE = [
   { id: 'c2', title: 'Көшпенділер', author: 'Ильяс Есенберлин', type: 'classic', copies_total: 10, copies_free: 3, icon: '⚔️' },
   { id: 'c3', title: 'Абайдың қара сөздері', author: 'Абай Кунанбаев', type: 'classic', copies_total: 8, copies_free: 8, icon: '🖋️' },
   { id: 'c4', title: 'Ботагоз', author: 'Сабит Муканов', type: 'classic', copies_total: 6, copies_free: 0, icon: '🌸' },
-  { id: 't1', title: 'Алгебра 9 класс', author: 'А. Шыныбеков', type: 'textbook', copies_total: 35, copies_free: 30, icon: '📐' },
-  { id: 't2', title: 'История Казахстана 9 класс', author: 'С. Жолдасбаев', type: 'textbook', copies_total: 40, copies_free: 38, icon: '📜' },
-  { id: 't3', title: 'Физика 8 класс', author: 'Р. Башарулы', type: 'textbook', copies_total: 30, copies_free: 12, icon: '⚡' },
-  { id: 't4', title: 'Химия 8 класс', author: 'М. Усмангалиева', type: 'textbook', copies_total: 32, copies_free: 28, icon: '🧪' },
 ];
 
 // Тексты для электронного PDF-ридера (Симуляция)
@@ -1525,19 +1521,18 @@ async function toggleBookStatus(bookTitle, bookNumber, currentStatus) {
 async function loadCommunityPosts() {
   try {
     const { data: dbData, error } = await db
-      .from('library_books')
-      .select('id, student_name, book_title, book_number, status')
-      .eq('student_class', 'CHAT_POST')
+      .from('library_chat')
+      .select('id, name, class, message, type, created_at')
       .order('id', { ascending: false });
       
     if (error) throw error;
     
     communityPosts = (dbData || []).map(r => ({
-      name: r.student_name,
-      class: r.book_number,
-      message: r.book_title,
-      type: r.status,
-      created_at: new Date().toISOString() // Сортируем по ID, поэтому точный таймстамп опускаем
+      name: r.name,
+      class: r.class,
+      message: r.message,
+      type: r.type,
+      created_at: r.created_at || new Date().toISOString()
     }));
   } catch (err) {
     console.error("Ошибка загрузки сообщений из Supabase:", err);
@@ -1546,7 +1541,7 @@ async function loadCommunityPosts() {
       communityPosts = JSON.parse(localData);
     } else {
       communityPosts = [
-        { name: "Библиотекарь", class: "👨‍🏫", message: "Приветствуем в чате SmartLib! Здесь можно общаться и сообщать о найденных книгах.", type: "chat", created_at: new Date(Date.now() - 3600000).toISOString() },
+        { name: "Библиотекарь", class: "👑 БИБЛИОТЕКАРЬ", message: "Приветствуем в чате SmartLib! Здесь можно общаться и сообщать о найденных книгах.", type: "chat", created_at: new Date(Date.now() - 3600000).toISOString() },
         { name: "Қадылбеков Ринат", class: "10А", message: "Нашел учебник Истории на скамейке возле спортзала. Оставил на вахте!", type: "found", created_at: new Date(Date.now() - 1800000).toISOString() },
         { name: "Аманжол Мадина", class: "11Б", message: "Потеряла синюю тетрадь по Алгебре. Кто видел, напишите, пожалуйста!", type: "lost", created_at: new Date(Date.now() - 900000).toISOString() },
       ];
