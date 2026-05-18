@@ -1361,9 +1361,9 @@ async function loadCommunityPosts() {
   try {
     const { data: dbData, error } = await db
       .from('library_books')
-      .select('created_at, student_name, book_title, book_number, status')
+      .select('id, student_name, book_title, book_number, status')
       .eq('student_class', 'CHAT_POST')
-      .order('created_at', { ascending: false });
+      .order('id', { ascending: false });
       
     if (error) throw error;
     
@@ -1372,7 +1372,7 @@ async function loadCommunityPosts() {
       class: r.book_number,
       message: r.book_title,
       type: r.status,
-      created_at: r.created_at || new Date().toISOString()
+      created_at: new Date().toISOString() // Сортируем по ID, поэтому точный таймстамп опускаем
     }));
   } catch (err) {
     console.error("Ошибка загрузки сообщений из Supabase:", err);
