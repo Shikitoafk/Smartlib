@@ -1272,6 +1272,15 @@ async function handleStudentRegister() {
     alert("Пожалуйста, введите ваше полное имя!");
     return;
   }
+
+  // Защита от спуфинга админа
+  const forbidden = ["библиотекарь", "админ", "admin", "librarian", "модератор", "moderator", "систем", "system", "👑", "👨‍🏫"];
+  const hasForbidden = forbidden.some(word => nameInput.toLowerCase().includes(word));
+  if (hasForbidden) {
+    alert("Использование административных имен в целях безопасности запрещено!");
+    return;
+  }
+
   if (!passwordInput) {
     alert("Пожалуйста, введите пароль для защиты кабинета!");
     return;
@@ -1557,15 +1566,35 @@ async function addCommunityPost(messageText, type = 'chat') {
   let posterName = "";
   let posterClass = "";
   
-  if (currentRole === 'librarian') {
+  // Проверяем, действительно ли отправитель авторизован как библиотекарь
+  const isRealLibrarian = (currentRole === 'librarian') && (sessionStorage.getItem('smartlib_lib_authenticated') === 'true');
+  
+  if (isRealLibrarian) {
     posterName = "Библиотекарь";
     posterClass = "👑 БИБЛИОТЕКАРЬ"; // Уникальный идентификатор
   } else {
+    // Блокируем несанкционированную попытку выдачи себя за админа
+    if (currentRole === 'librarian') {
+      alert("Ошибка доступа: у вас нет прав на отправку сообщений от лица библиотекаря!");
+      return;
+    }
+    
     if (!loggedInStudent) {
       alert("Авторизация не найдена. Пожалуйста, войдите в систему!");
       return;
     }
-    posterName = loggedInStudent.name;
+    
+    // Двойная защита на стороне чата
+    let cleanName = loggedInStudent.name.trim();
+    const forbidden = ["библиотекарь", "админ", "admin", "librarian", "модератор", "moderator", "систем", "system", "👑", "👨‍🏫"];
+    const hasForbidden = forbidden.some(word => cleanName.toLowerCase().includes(word));
+    
+    if (hasForbidden) {
+      alert("Ваше имя содержит защищенные административные ключевые слова. Отправка заблокирована.");
+      return;
+    }
+    
+    posterName = cleanName;
     posterClass = loggedInStudent.class;
   }
   
