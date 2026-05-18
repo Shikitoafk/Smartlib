@@ -414,7 +414,7 @@ const FALLBACK_MOCK_DATA = [
   { student_class:'9Б', student_name:'Оспанов Дамир',    book_title:'История',         book_number:'ИС-392', status:'ok' },
   { student_class:'9Б', student_name:'Асылбекова Аружан',book_title:'История',         book_number:'ИС-393', status:'lost' },
 
-  // 10Б класс
+  // 10Б класс (Резервный)
   { student_class:'10Б', student_name:'Болатов Арсен',    book_title:'География',       book_number:'ГГ-101', status:'ok' },
   { student_class:'10Б', student_name:'Кусаинова Диана',  book_title:'География',       book_number:'ГГ-102', status:'ok' },
   { student_class:'10Б', student_name:'Сулейменов Темирлан', book_title:'География',     book_number:'ГГ-103', status:'lost' },
@@ -481,6 +481,32 @@ let currentGrade = null;
 let currentSubject = null;
 let currentStudentsData = [];
 
+// ─────────────────────────────────────────────
+//  ИНТЕЛЛЕКТУАЛЬНАЯ НОРМАЛИЗАЦИЯ ИМЕНИ КЛАССА
+// ─────────────────────────────────────────────
+function normalizeClassName(name) {
+  if (!name) return '';
+  let str = name.trim();
+  
+  // Если это ровно "10 класс" или "10", маппим в "10А" для совместимости
+  if (str === '10 класс' || str === '10') {
+    return '10А';
+  }
+  
+  // Вырезаем цифру и букву параллели (например, "10 Б класс" -> "10Б", "10 А" -> "10А")
+  const match = str.match(/^(\d+)\s*([А-Яа-яA-Za-z]?)/);
+  if (match) {
+    const num = match[1];
+    const letter = match[2].toUpperCase();
+    if (letter) {
+      return num + letter;
+    }
+    return num + 'А';
+  }
+  
+  return str;
+}
+
 // ─── ЗАГРУЗКА ДАННЫХ ────────────────────────────────
 async function loadAllData() {
   try {
@@ -493,25 +519,25 @@ async function loadAllData() {
 
     const dbRecords = dbData || [];
 
-    // Нормализуем Supabase записи (например, "10 класс" переименовываем в "10А")
+    // Нормализуем Supabase записи (например, "10 класс" -> "10А", "10 Б" -> "10Б")
     const normalizedDbRecords = dbRecords.map(r => {
-      let className = r.student_class?.trim() || '';
-      if (className === '10 класс' || className === '10') {
-        return { ...r, student_class: '10А' };
-      }
-      return r;
+      return { ...r, student_class: normalizeClassName(r.student_class) };
     });
 
     // 2. Определяем, какие классы УЖЕ есть в базе Supabase
     const dbGrades = new Set();
     normalizedDbRecords.forEach(r => {
-      const className = r.student_class?.trim() || '';
+      const className = r.student_class;
       if (className) dbGrades.add(className);
     });
 
     // 3. Отбираем локальные данные только для тех классов, которых НЕТ в базе Supabase
-    const fallbackRecords = FALLBACK_MOCK_DATA.filter(r => {
-      const className = r.student_class?.trim() || '';
+    const normalizedMockData = FALLBACK_MOCK_DATA.map(r => {
+      return { ...r, student_class: normalizeClassName(r.student_class) };
+    });
+
+    const fallbackRecords = normalizedMockData.filter(r => {
+      const className = r.student_class;
       return className && !dbGrades.has(className);
     });
 
@@ -519,7 +545,9 @@ async function loadAllData() {
     allBooksData = [...normalizedDbRecords, ...fallbackRecords];
   } catch (err) {
     console.warn("Не удалось загрузить данные из Supabase. Используется локальный массив:", err);
-    allBooksData = FALLBACK_MOCK_DATA;
+    allBooksData = FALLBACK_MOCK_DATA.map(r => {
+      return { ...r, student_class: normalizeClassName(r.student_class) };
+    });
   }
 }
 
@@ -537,10 +565,10 @@ async function init() {
     return;
   }
 
-  // Собираем уникальные классы (например, 7А, 7Б, 8А...) и считаем количество учеников
+  // Собираем уникальные классы (7А, 7Б, 8А...) и считаем количество учеников
   const classMap = new Map(); // className -> Set(student_name)
   allBooksData.forEach(r => {
-    const className = r.student_class?.trim() || '';
+    const className = r.student_class;
     if (className) {
       if (!classMap.has(className)) {
         classMap.set(className, new Set());
@@ -590,8 +618,8 @@ function openGrade(grade) {
   const list = document.getElementById('subjects-list');
   list.innerHTML = '';
 
-  // Фильтруем данные по выбранному классу (например, "7А" или "10А")
-  const classData = allBooksData.filter(r => r.student_class?.trim() === grade);
+  // Фильтруем данные по выбранному классу
+  const classData = allBooksData.filter(r => r.student_class === grade);
 
   // Группируем по предмету
   const subjectMap = new Map();
@@ -650,7 +678,7 @@ function openSubject(grade, subject) {
 
   // Фильтруем по классу и названию книги, затем сортируем по алфавиту
   const filteredData = allBooksData.filter(r => {
-    const matchesClass = r.student_class?.trim() === grade;
+    const matchesClass = r.student_class === grade;
     const matchesSubject = r.book_title?.trim() === subject;
     return matchesClass && matchesSubject;
   }).sort((a, b) => a.student_name.localeCompare(b.student_name, 'ru'));
@@ -690,7 +718,6 @@ function renderStudentsTable(data) {
   });
 }
 
-// Поиск
 function filterStudents() {
   const q = document.getElementById('search-input').value.trim().toLowerCase();
   if (!q) {
