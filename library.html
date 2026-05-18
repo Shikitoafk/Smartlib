@@ -8,479 +8,380 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { inter: ['Inter', 'sans-serif'] },
-          colors: {
-            brand: {
-              50:  '#f0f4ff',
-              100: '#e0eaff',
-              500: '#3b72f6',
-              600: '#2563eb',
-              700: '#1d4ed8',
-            }
-          },
-          boxShadow: {
-            'card': '0 2px 16px 0 rgba(0,0,0,0.07)',
-            'card-hover': '0 4px 32px 0 rgba(0,0,0,0.13)',
-            'input': '0 2px 8px 0 rgba(59,114,246,0.10)',
-          }
-        }
-      }
-    }
-  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
-    * { font-family: 'Inter', sans-serif; }
-    body { background: #f5f7fa; min-height: 100vh; }
+    * { font-family: 'Inter', sans-serif; box-sizing: border-box; }
+    body { background: #f4f6fa; min-height: 100vh; }
 
-    .search-wrapper { position: relative; }
+    .screen { display: none; }
+    .screen.active { display: block; }
 
-    #dropdown {
-      position: absolute;
-      top: calc(100% + 6px);
-      left: 0; right: 0;
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 8px 40px 0 rgba(0,0,0,0.13);
-      z-index: 50;
-      overflow: hidden;
-      max-height: 320px;
-      overflow-y: auto;
-    }
-
-    #dropdown:empty { display: none; }
-
-    .dropdown-item {
-      padding: 14px 20px;
-      cursor: pointer;
-      transition: background 0.15s;
-      border-bottom: 1px solid #f0f0f0;
-    }
-    .dropdown-item:last-child { border-bottom: none; }
-    .dropdown-item:hover { background: #f0f4ff; }
-
-    .book-card {
+    .card {
       background: #fff;
       border-radius: 20px;
-      box-shadow: 0 2px 16px 0 rgba(0,0,0,0.07);
-      transition: box-shadow 0.2s, transform 0.2s;
-      padding: 20px;
-    }
-    .book-card:hover { box-shadow: 0 4px 32px 0 rgba(0,0,0,0.13); transform: translateY(-2px); }
-
-    .btn-lost {
-      background: #f0f4ff;
-      color: #2563eb;
-      border: none;
-      border-radius: 12px;
-      padding: 8px 18px;
-      font-size: 14px;
-      font-weight: 500;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      transition: box-shadow 0.18s, transform 0.18s;
       cursor: pointer;
-      transition: background 0.18s, color 0.18s;
     }
-    .btn-lost:hover { background: #dbeafe; }
+    .card:hover {
+      box-shadow: 0 6px 28px rgba(0,0,0,0.13);
+      transform: translateY(-3px);
+    }
+    .card:active { transform: translateY(0); }
 
+    .badge-active {
+      background: #ecfdf5; color: #059669;
+      padding: 4px 12px; border-radius: 99px;
+      font-size: 13px; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 5px;
+    }
     .badge-lost {
-      background: #fff1f2;
-      color: #e11d48;
-      border-radius: 12px;
-      padding: 8px 18px;
-      font-size: 14px;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+      background: #fff1f2; color: #e11d48;
+      padding: 4px 12px; border-radius: 99px;
+      font-size: 13px; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 5px;
     }
 
-    #modal-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.35);
-      backdrop-filter: blur(4px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-      padding: 20px;
+    .btn-back {
+      display: inline-flex; align-items: center; gap-6px;
+      background: #fff; border: none; border-radius: 12px;
+      padding: 8px 16px; font-size: 14px; font-weight: 500;
+      color: #374151; cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      transition: background 0.15s;
     }
-    #modal-overlay.open { display: flex; }
-
-    #modal-box {
-      background: #fff;
-      border-radius: 24px;
-      padding: 32px 28px;
-      max-width: 380px;
-      width: 100%;
-      box-shadow: 0 16px 60px 0 rgba(0,0,0,0.18);
-      animation: popIn 0.22s cubic-bezier(.34,1.56,.64,1);
-    }
-    @keyframes popIn {
-      from { transform: scale(0.88); opacity: 0; }
-      to   { transform: scale(1);    opacity: 1; }
-    }
+    .btn-back:hover { background: #f3f4f6; }
 
     .spinner {
-      width: 22px; height: 22px;
-      border: 3px solid #e0eaff;
-      border-top-color: #3b72f6;
+      width: 32px; height: 32px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #3b82f6;
       border-radius: 50%;
       animation: spin 0.75s linear infinite;
-      display: inline-block;
+      margin: 40px auto;
+      display: block;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 99px; }
+    .grade-num {
+      font-size: 52px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -2px;
+    }
+
+    tr:last-child td { border-bottom: none !important; }
   </style>
 </head>
 <body>
 
 <!-- ───── ШАПКА ───── -->
-<header class="bg-white border-b border-gray-100" style="box-shadow:0 1px 0 #f0f0f0;">
-  <div class="max-w-2xl mx-auto px-5 py-4 flex items-center gap-3">
-    <div class="w-9 h-9 rounded-xl bg-brand-500 flex items-center justify-center flex-shrink-0">
+<header style="background:#fff; border-bottom:1px solid #f0f0f0; position: sticky; top: 0; z-index: 40;">
+  <div class="max-w-3xl mx-auto px-5 py-4 flex items-center gap-3">
+    <div onclick="goHome()" style="cursor:pointer;"
+         class="w-9 h-9 rounded-xl bg-blue-500 flex items-center justify-center flex-shrink-0">
       <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
-        <path fill="#fff" d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
         <path stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
-              d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+              d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5V5a2.5 2.5 0 0 1 2.5-2.5H20v15"/>
       </svg>
     </div>
-    <div>
-      <p class="font-semibold text-gray-900 leading-tight text-[15px]">Школьная библиотека</p>
-      <p class="text-xs text-gray-400">Учёт книг у учеников</p>
+    <div style="flex:1">
+      <p class="font-semibold text-gray-900 text-[15px] leading-tight">Школьная библиотека</p>
+      <p id="breadcrumb" class="text-xs text-gray-400 mt-0.5">Все классы</p>
     </div>
   </div>
 </header>
 
-<!-- ───── ОСНОВНОЙ КОНТЕНТ ───── -->
-<main class="max-w-2xl mx-auto px-5 pt-10 pb-20">
+<main class="max-w-3xl mx-auto px-5 pt-8 pb-20">
 
-  <!-- Заголовок -->
-  <div class="mb-8 text-center">
-    <h1 class="text-3xl font-bold text-gray-900 tracking-tight mb-2">Найти ученика</h1>
-    <p class="text-gray-400 text-[15px]">Введите фамилию, чтобы посмотреть книги</p>
+  <!-- ══════════════════════════════════════════
+       ЭКРАН 1 — ВЫБОР КЛАССА
+  ══════════════════════════════════════════ -->
+  <div id="screen-grades" class="screen active">
+    <h1 class="text-2xl font-bold text-gray-900 mb-1">Выберите класс</h1>
+    <p class="text-gray-400 text-sm mb-7">Учёт школьных учебников</p>
+
+    <div id="grades-grid" class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+      <!-- карточки классов вставятся сюда -->
+    </div>
   </div>
 
-  <!-- Поиск -->
-  <div class="search-wrapper mb-8">
-    <div class="relative">
-      <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-        <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
-          <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
-          <path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  <!-- ══════════════════════════════════════════
+       ЭКРАН 2 — ПРЕДМЕТЫ КЛАССА
+  ══════════════════════════════════════════ -->
+  <div id="screen-subjects" class="screen">
+    <div class="flex items-center gap-3 mb-7">
+      <button class="btn-back" onclick="goHome()">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M19 12H5m0 0 7 7M5 12l7-7"/>
         </svg>
-      </span>
-      <input
-        id="search-input"
-        type="text"
-        placeholder="Например, Иванов..."
-        autocomplete="off"
-        class="w-full pl-11 pr-4 py-4 text-[15px] rounded-2xl border border-gray-200 bg-white
-               outline-none transition focus:border-brand-500 focus:shadow-input
-               placeholder-gray-300 text-gray-900"
-        style="box-shadow:0 2px 8px 0 rgba(0,0,0,0.05);"
-      />
-      <span id="search-spinner" class="absolute right-4 top-1/2 -translate-y-1/2 hidden">
-        <span class="spinner"></span>
-      </span>
+        Назад
+      </button>
+      <div>
+        <h2 id="subjects-title" class="text-xl font-bold text-gray-900"></h2>
+        <p class="text-xs text-gray-400 mt-0.5">Выберите предмет</p>
+      </div>
     </div>
-    <div id="dropdown"></div>
+    <div id="subjects-list" class="flex flex-col gap-3"></div>
   </div>
 
-  <!-- Карточка ученика -->
-  <div id="student-section" class="hidden">
-
-    <div class="mb-5 flex items-center justify-between">
+  <!-- ══════════════════════════════════════════
+       ЭКРАН 3 — УЧЕНИКИ ПО ПРЕДМЕТУ
+  ══════════════════════════════════════════ -->
+  <div id="screen-students" class="screen">
+    <div class="flex items-center gap-3 mb-7">
+      <button class="btn-back" id="back-to-subjects">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M19 12H5m0 0 7 7M5 12l7-7"/>
+        </svg>
+        Назад
+      </button>
       <div>
-        <h2 id="student-name" class="text-xl font-bold text-gray-900"></h2>
-        <p id="student-class" class="text-sm text-gray-400 mt-0.5"></p>
+        <h2 id="students-title" class="text-xl font-bold text-gray-900"></h2>
+        <p id="students-subtitle" class="text-xs text-gray-400 mt-0.5"></p>
       </div>
-      <span id="book-count" class="bg-brand-50 text-brand-600 text-sm font-semibold px-3 py-1 rounded-full"></span>
     </div>
 
-    <div id="books-list" class="flex flex-col gap-3"></div>
-
-    <div id="books-empty" class="hidden text-center py-10 text-gray-400">
-      <svg class="mx-auto mb-3 opacity-40" width="40" height="40" fill="none" viewBox="0 0 24 24">
-        <path stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-              d="M12 6v6m0 4h.01M22 12A10 10 0 1 1 2 12a10 10 0 0 1 20 0z"/>
-      </svg>
-      <p class="font-medium">Книг не найдено</p>
+    <!-- Счётчики -->
+    <div class="flex gap-3 mb-5 flex-wrap">
+      <span id="stat-total"  class="bg-white rounded-xl px-4 py-2 text-sm font-medium text-gray-700 shadow-sm"></span>
+      <span id="stat-ok"     class="badge-active text-sm px-4 py-2 rounded-xl" style="border-radius:12px;"></span>
+      <span id="stat-lost"   class="badge-lost text-sm px-4 py-2 rounded-xl" style="border-radius:12px;"></span>
     </div>
 
+    <!-- Таблица учеников -->
+    <div class="card overflow-hidden">
+      <table class="w-full text-sm">
+        <thead>
+          <tr style="background:#f8fafc;">
+            <th class="text-left px-5 py-3 text-gray-500 font-semibold text-xs uppercase tracking-wide">Ученик</th>
+            <th class="text-left px-4 py-3 text-gray-500 font-semibold text-xs uppercase tracking-wide hidden sm:table-cell">Кл.</th>
+            <th class="text-left px-4 py-3 text-gray-500 font-semibold text-xs uppercase tracking-wide">Инв. №</th>
+            <th class="text-right px-5 py-3 text-gray-500 font-semibold text-xs uppercase tracking-wide">Статус</th>
+          </tr>
+        </thead>
+        <tbody id="students-tbody"></tbody>
+      </table>
+    </div>
   </div>
 
 </main>
 
-<!-- ───── МОДАЛЬНОЕ ОКНО ───── -->
-<div id="modal-overlay">
-  <div id="modal-box">
-    <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-red-50 mx-auto mb-5">
-      <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
-        <path stroke="#e11d48" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
-              d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-      </svg>
-    </div>
-    <h3 class="text-[18px] font-bold text-gray-900 text-center mb-2">Отметить как утерянную?</h3>
-    <p class="text-gray-400 text-[14px] text-center mb-6 leading-relaxed" id="modal-book-title"></p>
-    <div class="flex gap-3">
-      <button
-        id="modal-cancel"
-        class="flex-1 py-3 rounded-2xl bg-gray-100 text-gray-700 font-semibold text-[15px]
-               hover:bg-gray-200 transition"
-      >Отмена</button>
-      <button
-        id="modal-confirm"
-        class="flex-1 py-3 rounded-2xl bg-red-500 text-white font-semibold text-[15px]
-               hover:bg-red-600 transition flex items-center justify-center gap-2"
-      >
-        <span id="modal-confirm-text">Да, потеряна</span>
-        <span id="modal-confirm-spinner" class="hidden"><span class="spinner" style="border-top-color:#fff;border-color:rgba(255,255,255,0.3);border-top-color:#fff;"></span></span>
-      </button>
-    </div>
-  </div>
-</div>
-
 <script>
-  // ─── КОНФИГУРАЦИЯ SUPABASE ───────────────────────────────────────────────────
-  const SUPABASE_URL  = 'SUPABASE_URL';   // ← вставьте ваш URL
-  const SUPABASE_ANON_KEY = 'SUPABASE_ANON_KEY';  // ← вставьте ваш Anon Key
-  // ────────────────────────────────────────────────────────────────────────────
+  // ─── SUPABASE ─────────────────────────────────────────────────────────────────
+  const SUPABASE_URL      = 'SUPABASE_URL';      // ← вставьте ваш URL
+  const SUPABASE_ANON_KEY = 'SUPABASE_ANON_KEY'; // ← вставьте ваш Anon Key
+  // ─────────────────────────────────────────────────────────────────────────────
 
   const { createClient } = supabase;
   const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // ─── ЭЛЕМЕНТЫ ────────────────────────────────────────────────────────────────
-  const searchInput     = document.getElementById('search-input');
-  const dropdown        = document.getElementById('dropdown');
-  const spinner         = document.getElementById('search-spinner');
-  const studentSection  = document.getElementById('student-section');
-  const studentNameEl   = document.getElementById('student-name');
-  const studentClassEl  = document.getElementById('student-class');
-  const bookCountEl     = document.getElementById('book-count');
-  const booksList       = document.getElementById('books-list');
-  const booksEmpty      = document.getElementById('books-empty');
-  const modalOverlay    = document.getElementById('modal-overlay');
-  const modalBookTitle  = document.getElementById('modal-book-title');
-  const modalCancel     = document.getElementById('modal-cancel');
-  const modalConfirm    = document.getElementById('modal-confirm');
-  const modalConfirmText    = document.getElementById('modal-confirm-text');
-  const modalConfirmSpinner = document.getElementById('modal-confirm-spinner');
+  // Цвета для карточек классов
+  const GRADE_STYLES = {
+    '7':  { bg: '#eff6ff', num: '#1d4ed8', label: '#3b82f6' },
+    '8':  { bg: '#f0fdf4', num: '#15803d', label: '#22c55e' },
+    '9':  { bg: '#fdf4ff', num: '#7e22ce', label: '#a855f7' },
+    '10': { bg: '#fff7ed', num: '#c2410c', label: '#f97316' },
+    '11': { bg: '#fff1f2', num: '#be123c', label: '#f43f5e' },
+  };
 
-  let debounceTimer = null;
-  let pendingBookId = null;
-  let pendingBookCardEl = null;
+  let currentGrade = null;
+  let currentSubject = null;
 
-  // ─── ПОИСК ───────────────────────────────────────────────────────────────────
-  searchInput.addEventListener('input', () => {
-    clearTimeout(debounceTimer);
-    const q = searchInput.value.trim();
-    if (q.length < 2) {
-      closeDropdown();
-      return;
-    }
-    debounceTimer = setTimeout(() => searchStudents(q), 280);
-  });
+  // ─── ИНИЦИАЛИЗАЦИЯ ───────────────────────────────────────────────────────────
+  async function init() {
+    const gradesGrid = document.getElementById('grades-grid');
+    gradesGrid.innerHTML = `<div class="col-span-2 sm:col-span-3"><span class="spinner"></span></div>`;
 
-  // Закрыть дропдаун при клике вне
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('.search-wrapper')) closeDropdown();
-  });
-
-  async function searchStudents(query) {
-    spinner.classList.remove('hidden');
-    dropdown.innerHTML = '';
-
+    // Загружаем все уникальные классы
     const { data, error } = await db
       .from('library_books')
-      .select('student_name, student_class')
-      .ilike('student_name', `%${query}%`);
+      .select('student_class');
 
-    spinner.classList.add('hidden');
-
-    if (error || !data || data.length === 0) {
-      dropdown.innerHTML = `<div class="dropdown-item text-gray-400 text-sm">Ничего не найдено</div>`;
+    if (error || !data) {
+      gradesGrid.innerHTML = `<p class="text-red-500 col-span-2">Ошибка загрузки: ${error?.message}</p>`;
       return;
     }
 
-    // Дедупликация по имени
-    const seen = new Map();
+    // Группируем по числовому номеру класса (7, 8, 9, 10, 11)
+    const gradeNums = new Set();
     data.forEach(r => {
-      if (!seen.has(r.student_name)) seen.set(r.student_name, r.student_class);
+      const num = r.student_class?.trim().split(' ')[0];
+      if (num) gradeNums.add(num);
     });
 
-    seen.forEach((cls, name) => {
-      const item = document.createElement('div');
-      item.className = 'dropdown-item';
-      item.innerHTML = `
-        <p class="font-medium text-gray-900 text-[15px]">${name}</p>
-        <p class="text-xs text-gray-400 mt-0.5">${cls}</p>
+    const sorted = [...gradeNums].sort((a, b) => parseInt(a) - parseInt(b));
+
+    gradesGrid.innerHTML = '';
+    sorted.forEach(grade => {
+      const st = GRADE_STYLES[grade] || { bg: '#f8fafc', num: '#374151', label: '#6b7280' };
+      const card = document.createElement('div');
+      card.className = 'card p-6 flex flex-col items-center justify-center text-center min-h-[130px]';
+      card.style.background = st.bg;
+      card.innerHTML = `
+        <span class="grade-num" style="color:${st.num}">${grade}</span>
+        <span class="text-sm font-semibold mt-1" style="color:${st.label}">класс</span>
       `;
-      item.addEventListener('click', () => {
-        searchInput.value = name;
-        closeDropdown();
-        loadStudentBooks(name, cls);
-      });
-      dropdown.appendChild(item);
+      card.addEventListener('click', () => openGrade(grade));
+      gradesGrid.appendChild(card);
     });
   }
 
-  function closeDropdown() {
-    dropdown.innerHTML = '';
+  // ─── ОТКРЫТЬ КЛАСС → ПРЕДМЕТЫ ────────────────────────────────────────────────
+  async function openGrade(grade) {
+    currentGrade = grade;
+    showScreen('subjects');
+    document.getElementById('subjects-title').textContent = `${grade} класс`;
+    setBreadcrumb(`${grade} класс`);
+
+    const list = document.getElementById('subjects-list');
+    list.innerHTML = `<span class="spinner"></span>`;
+
+    // Все записи для этого класса (student_class начинается с "7 ", "8 " и т.д.)
+    const { data, error } = await db
+      .from('library_books')
+      .select('book_title, status')
+      .ilike('student_class', `${grade} %`);
+
+    if (error || !data) {
+      list.innerHTML = `<p class="text-red-500">Ошибка: ${error?.message}</p>`;
+      return;
+    }
+
+    // Группируем по предмету
+    const subjectMap = new Map(); // title → { total, lost }
+    data.forEach(r => {
+      const title = r.book_title?.trim();
+      if (!title) return;
+      if (!subjectMap.has(title)) subjectMap.set(title, { total: 0, lost: 0 });
+      const s = subjectMap.get(title);
+      s.total++;
+      if (r.status === 'lost') s.lost++;
+    });
+
+    if (subjectMap.size === 0) {
+      list.innerHTML = `<p class="text-gray-400 text-center py-10">Нет данных для этого класса</p>`;
+      return;
+    }
+
+    const sorted = [...subjectMap.entries()].sort((a, b) => a[0].localeCompare(b[0], 'ru'));
+
+    list.innerHTML = '';
+    sorted.forEach(([title, stats]) => {
+      const card = document.createElement('div');
+      card.className = 'card px-5 py-4 flex items-center justify-between gap-4';
+      card.innerHTML = `
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
+              <path stroke="#2563eb" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+                    d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5V5a2.5 2.5 0 0 1 2.5-2.5H20v15"/>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <p class="font-semibold text-gray-900 text-[14px] leading-snug truncate">${escHtml(title)}</p>
+            <p class="text-xs text-gray-400 mt-0.5">${stats.total} уч.</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          ${stats.lost > 0 ? `<span class="badge-lost">${stats.lost} утеряно</span>` : `<span class="badge-active">Всё ок</span>`}
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" class="text-gray-300">
+            <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="m9 18 6-6-6-6"/>
+          </svg>
+        </div>
+      `;
+      card.addEventListener('click', () => openSubject(grade, title));
+      list.appendChild(card);
+    });
   }
 
-  // ─── КНИГИ УЧЕНИКА ────────────────────────────────────────────────────────────
-  async function loadStudentBooks(name, cls) {
-    studentSection.classList.remove('hidden');
-    studentNameEl.textContent = name;
-    studentClassEl.textContent = `Класс: ${cls}`;
-    booksList.innerHTML = `<div class="flex justify-center py-8"><span class="spinner"></span></div>`;
-    booksEmpty.classList.add('hidden');
-    bookCountEl.textContent = '';
+  // ─── ОТКРЫТЬ ПРЕДМЕТ → УЧЕНИКИ ───────────────────────────────────────────────
+  async function openSubject(grade, subject) {
+    currentSubject = subject;
+    showScreen('students');
+    document.getElementById('students-title').textContent = subject;
+    document.getElementById('students-subtitle').textContent = `${grade} класс`;
+    setBreadcrumb(`${grade} класс → ${subject}`);
+
+    const tbody = document.getElementById('students-tbody');
+    tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center"><span class="spinner" style="margin:0 auto;"></span></td></tr>`;
+
+    document.getElementById('back-to-subjects').onclick = () => openGrade(grade);
 
     const { data, error } = await db
       .from('library_books')
       .select('*')
-      .ilike('student_name', name);
+      .ilike('student_class', `${grade} %`)
+      .eq('book_title', subject)
+      .order('student_name');
 
-    booksList.innerHTML = '';
-
-    if (error || !data || data.length === 0) {
-      booksEmpty.classList.remove('hidden');
+    if (error || !data) {
+      tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-red-500">Ошибка: ${error?.message}</td></tr>`;
       return;
     }
 
-    bookCountEl.textContent = `${data.length} кн.`;
+    // Счётчики
+    const total = data.length;
+    const lost  = data.filter(r => r.status === 'lost').length;
+    const ok    = total - lost;
 
-    data.forEach(book => {
-      booksList.appendChild(createBookCard(book));
+    document.getElementById('stat-total').textContent = `Всего: ${total}`;
+    document.getElementById('stat-ok').textContent    = `✓ Есть: ${ok}`;
+    document.getElementById('stat-lost').textContent  = `✗ Утеряно: ${lost}`;
+
+    if (total === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-gray-400">Нет данных</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = '';
+    data.forEach((row, i) => {
+      const isLost = row.status === 'lost';
+      const tr = document.createElement('tr');
+      tr.style.borderBottom = '1px solid #f3f4f6';
+      tr.innerHTML = `
+        <td class="px-5 py-3 font-medium text-gray-900 text-[13px]">${escHtml(row.student_name)}</td>
+        <td class="px-4 py-3 text-gray-500 text-[13px] hidden sm:table-cell">${escHtml(row.student_class)}</td>
+        <td class="px-4 py-3 text-gray-500 text-[13px] font-mono">${escHtml(row.book_number)}</td>
+        <td class="px-5 py-3 text-right">
+          ${isLost
+            ? `<span class="badge-lost">Утеряна</span>`
+            : `<span class="badge-active">Есть</span>`
+          }
+        </td>
+      `;
+      tbody.appendChild(tr);
     });
-
-    // Плавный скролл к секции
-    studentSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  function createBookCard(book) {
-    const card = document.createElement('div');
-    card.className = 'book-card';
-    card.dataset.id = book.id;
-
-    const isLost = book.status === 'lost';
-
-    card.innerHTML = `
-      <div class="flex items-start gap-4">
-        <div class="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center
-                    ${isLost ? 'bg-red-50' : 'bg-brand-50'}">
-          <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-            <path stroke="${isLost ? '#e11d48' : '#2563eb'}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
-                  d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5V5a2.5 2.5 0 0 1 2.5-2.5H20v15"/>
-          </svg>
-        </div>
-        <div class="flex-1 min-w-0">
-          <p class="font-semibold text-gray-900 text-[15px] leading-snug mb-1">${escHtml(book.book_title)}</p>
-          <p class="text-xs text-gray-400">Инв. №&nbsp;${escHtml(book.book_number)}</p>
-        </div>
-      </div>
-      <div class="mt-4 flex justify-end action-area">
-        ${isLost
-          ? `<span class="badge-lost">
-               <svg width="14" height="14" fill="none" viewBox="0 0 24 24">
-                 <path stroke="#e11d48" stroke-width="2" stroke-linecap="round"
-                       d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-               </svg>
-               Книга утеряна&nbsp;·&nbsp;Требуется замена
-             </span>`
-          : `<button class="btn-lost" data-id="${book.id}" data-title="${escAttr(book.book_title)}">
-               Потерял
-             </button>`
-        }
-      </div>
-    `;
-
-    // Обработчик кнопки "Потерял"
-    if (!isLost) {
-      card.querySelector('.btn-lost').addEventListener('click', () => openModal(book.id, book.book_title, card));
-    }
-
-    return card;
+  // ─── НАВИГАЦИЯ ────────────────────────────────────────────────────────────────
+  function showScreen(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(`screen-${name}`).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // ─── МОДАЛЬНОЕ ОКНО ───────────────────────────────────────────────────────────
-  function openModal(bookId, bookTitle, cardEl) {
-    pendingBookId = bookId;
-    pendingBookCardEl = cardEl;
-    modalBookTitle.textContent = `«${bookTitle}»`;
-    modalOverlay.classList.add('open');
+  function goHome() {
+    currentGrade = null;
+    currentSubject = null;
+    showScreen('grades');
+    setBreadcrumb('Все классы');
   }
 
-  function closeModal() {
-    modalOverlay.classList.remove('open');
-    pendingBookId = null;
-    pendingBookCardEl = null;
+  function setBreadcrumb(text) {
+    document.getElementById('breadcrumb').textContent = text;
   }
-
-  modalCancel.addEventListener('click', closeModal);
-  modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
-
-  modalConfirm.addEventListener('click', async () => {
-    if (!pendingBookId) return;
-
-    // Блокируем кнопку
-    modalConfirmText.textContent = 'Сохраняем...';
-    modalConfirmSpinner.classList.remove('hidden');
-    modalConfirm.disabled = true;
-
-    const { error } = await db
-      .from('library_books')
-      .update({ status: 'lost' })
-      .eq('id', pendingBookId);
-
-    modalConfirmText.textContent = 'Да, потеряна';
-    modalConfirmSpinner.classList.add('hidden');
-    modalConfirm.disabled = false;
-
-    if (error) {
-      alert('Ошибка: ' + error.message);
-      closeModal();
-      return;
-    }
-
-    // Обновляем карточку без перезагрузки
-    if (pendingBookCardEl) {
-      const actionArea = pendingBookCardEl.querySelector('.action-area');
-      actionArea.innerHTML = `
-        <span class="badge-lost">
-          <svg width="14" height="14" fill="none" viewBox="0 0 24 24">
-            <path stroke="#e11d48" stroke-width="2" stroke-linecap="round"
-                  d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-          </svg>
-          Книга утеряна&nbsp;·&nbsp;Требуется замена
-        </span>`;
-      // Меняем иконку книги на красную
-      const icon = pendingBookCardEl.querySelector('div.rounded-xl');
-      icon.classList.remove('bg-brand-50');
-      icon.classList.add('bg-red-50');
-      icon.querySelector('path').setAttribute('stroke', '#e11d48');
-    }
-
-    closeModal();
-  });
 
   // ─── УТИЛИТЫ ─────────────────────────────────────────────────────────────────
   function escHtml(str) {
-    return String(str)
+    return String(str ?? '')
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+      .replace(/>/g, '&gt;');
   }
-  function escAttr(str) {
-    return String(str).replace(/"/g, '&quot;');
-  }
+
+  // Старт
+  init();
 </script>
 
 </body>
